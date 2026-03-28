@@ -1,0 +1,23 @@
+{
+  "name": "@enshou/core",
+  "version": "0.0.0",
+  "private": false,
+  "license": "Apache-2.0",
+  "author": "Ivan Popov <iiivanpopov999@gmail.com>",
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsdown"
+  },
+  "devDependencies": {
+    "@enshou/di": "workspace:*",
+    "@typescript/native-preview": "catalog:",
+    "tsdown": "catalog:"
+  }
+}

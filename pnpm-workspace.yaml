@@ -1,0 +1,8 @@
+packages:
+  - 'packages/*'
+allowBuilds:
+  lefthook: false
+
+catalog:
+  '@typescript/native-preview': ^7.0.0-dev.20260328.1
+  tsdown: ^0.21.7

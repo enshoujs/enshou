@@ -1,0 +1,14 @@
+{
+  "name": "enshou",
+  "scripts": {
+    "build": "pnpm run -r build",
+    "check": "oxfmt && oxlint --fix && tsgo -p tsconfig.json"
+  },
+  "devDependencies": {
+    "@typescript/native-preview": "catalog:",
+    "lefthook": "^2.1.4",
+    "oxfmt": "^0.42.0",
+    "oxlint": "^1.57.0",
+    "oxlint-tsgolint": "^0.18.1"
+  }
+}
