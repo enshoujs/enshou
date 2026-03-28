@@ -2,5 +2,5 @@ pre-commit:
   commands:
     check:
       run: pnpm check
-    check:
+    build:
       run: pnpm build
