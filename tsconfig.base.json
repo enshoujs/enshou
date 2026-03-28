@@ -6,12 +6,6 @@
     "strict": true,
     "verbatimModuleSyntax": true,
     "skipLibCheck": true,
-    "noEmit": true,
-    "paths": {
-      "@enshou/di": ["./packages/di/src/index.ts"],
-      "@enshou/core": ["./packages/core/src/index.ts"],
-      "@enshou/http": ["./packages/http/src/index.ts"],
-      "@enshou/valibot": ["./packages/valibot/src/index.ts"]
-    }
+    "noEmit": true
   }
 }

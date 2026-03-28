@@ -2,7 +2,8 @@
   "name": "enshou",
   "scripts": {
     "build": "pnpm run -r build",
-    "check": "oxfmt && oxlint --fix && tsgo"
+    "check": "oxfmt && oxlint --fix && tsgo",
+    "prepare": "lefthook install"
   },
   "devDependencies": {
     "@typescript/native-preview": "catalog:",

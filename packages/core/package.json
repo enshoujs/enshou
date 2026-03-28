@@ -25,6 +25,7 @@
   "devDependencies": {
     "@enshou/di": "workspace:*",
     "@typescript/native-preview": "catalog:",
-    "tsdown": "catalog:"
+    "tsdown": "catalog:",
+    "vitest": "catalog:"
   }
 }

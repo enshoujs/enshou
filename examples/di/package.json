@@ -1,0 +1,12 @@
+{
+  "name": "@example/di",
+  "scripts": {
+    "dev": "bun src/index.ts"
+  },
+  "dependencies": {
+    "@enshou/di": "workspace:*"
+  },
+  "devDependencies": {
+    "@typescript/native-preview": "catalog:"
+  }
+}
