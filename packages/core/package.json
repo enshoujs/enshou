@@ -4,6 +4,7 @@
   "private": false,
   "license": "Apache-2.0",
   "author": "Ivan Popov <iiivanpopov999@gmail.com>",
+  "repository": "https://github.com/enshoujs/enshou.git",
   "type": "module",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -13,7 +14,8 @@
     }
   },
   "scripts": {
-    "build": "tsdown"
+    "build": "tsdown",
+    "prepublishOnly": "pnpm check && pnpm build"
   },
   "devDependencies": {
     "@enshou/di": "workspace:*",
