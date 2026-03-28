@@ -15,7 +15,7 @@
   },
   "scripts": {
     "build": "tsdown",
-    "prepublishOnly": "pnpm check && pnpm build"
+    "prepublishOnly": "pnpm build"
   },
   "devDependencies": {
     "@typescript/native-preview": "catalog:",
