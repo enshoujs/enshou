@@ -5,5 +5,5 @@ export default defineConfig({
   format: 'esm',
   clean: true,
   outExtensions: () => ({ js: '.js', dts: '.d.ts' }),
-  dts: { tsgo: true },
+  dts: { oxc: true },
 })
