@@ -24,7 +24,6 @@
   },
   "dependencies": {
     "@enshou/di": "workspace:*",
-    "@enshou/shared": "workspace:*",
     "hono": "catalog:hono"
   },
   "devDependencies": {

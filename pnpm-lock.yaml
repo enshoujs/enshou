@@ -78,9 +78,6 @@ importers:
       '@enshou/di':
         specifier: workspace:*
         version: link:../di
-      '@enshou/shared':
-        specifier: workspace:*
-        version: link:../shared
       hono:
         specifier: catalog:hono
         version: 4.12.9
@@ -102,10 +99,6 @@ importers:
         version: 4.1.2(vite@8.0.3(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.1))
 
   packages/di:
-    dependencies:
-      '@enshou/shared':
-        specifier: workspace:*
-        version: link:../shared
     devDependencies:
       '@swc/core':
         specifier: catalog:tooling

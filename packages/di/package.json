@@ -23,9 +23,6 @@
     "test": "vitest run",
     "prepublishOnly": "pnpm build"
   },
-  "dependencies": {
-    "@enshou/shared": "workspace:*"
-  },
   "devDependencies": {
     "@swc/core": "catalog:tooling",
     "@typescript/native-preview": "catalog:tooling",
