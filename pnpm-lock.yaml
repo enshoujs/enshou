@@ -82,7 +82,7 @@ importers:
         specifier: workspace:*
         version: link:../shared
       hono:
-        specifier: ^4.12.9
+        specifier: catalog:hono
         version: 4.12.9
     devDependencies:
       '@swc/core':
