@@ -15,7 +15,7 @@ class UserController {
   constructor(private userService: UserService) {}
 
   @Get('/all')
-  getUsers = (c: Context) => {
+  getUsers(c: Context) {
     return c.json(this.userService.getUsers())
   }
 }

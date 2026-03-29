@@ -26,12 +26,15 @@ export class Application {
 
     for (const Controller of this.options.controllers) {
       const prefix = (Controller as any)[PREFIX_KEY]
-      const routes = (Controller as any)[ROUTE_KEY] || []
+
+      // this order is important
       const instance = this.container.resolve<any>(Controller)
+      const routes = (Controller as any)[ROUTE_KEY] || []
+      //
 
       for (const route of routes) {
         const path = `${prefix}${route.path}`.replace(/\/+/g, '/')
-        app.on(route.method, path, instance[route.handler])
+        app.on(route.method, path, instance[route.handler].bind(instance))
       }
     }
 

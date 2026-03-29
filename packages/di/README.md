@@ -1,11 +1,13 @@
 # @enshou/di
 
-A small dependency injection container for TypeScript.
+`@enshou/di` is a small dependency injection container for TypeScript with
+explicit constructor metadata.
 
-It gives you a typed token system, a simple container, and an explicit
-`@Inject(...)` decorator for constructor dependencies.
+It supports typed symbol tokens, string keys, and class tokens. Dependencies are
+declared with `@Inject(...)`, and instances can be resolved as singletons or
+transients.
 
-## Quick example
+## Quick Example
 
 ```ts
 import { Container, Inject, createToken } from '@enshou/di'
@@ -15,8 +17,6 @@ type AppConfig = {
 }
 
 const CONFIG = createToken<AppConfig>('config')
-const LOGGER = createToken<Logger>('logger')
-const API = createToken<ApiClient>('api')
 
 class Logger {
   log(message: string) {
@@ -24,7 +24,7 @@ class Logger {
   }
 }
 
-@Inject([CONFIG, LOGGER])
+@Inject([CONFIG, Logger])
 class ApiClient {
   constructor(
     private readonly config: AppConfig,
@@ -42,10 +42,10 @@ container.registerValue(CONFIG, {
   apiUrl: 'https://example.dev',
 })
 
-container.registerClass(LOGGER, Logger)
-container.registerClass(API, ApiClient)
+container.registerClass(Logger, Logger)
+container.registerClass(ApiClient, ApiClient)
 
-const api = container.resolve(API)
+const api = container.resolve(ApiClient)
 api.ping()
 ```
 
@@ -53,11 +53,13 @@ api.ping()
 
 ### `createToken<T>(description)`
 
-Creates a unique, typed token.
+Creates a unique typed symbol token.
 
 ```ts
 const USER_REPOSITORY = createToken<UserRepository>('user-repository')
 ```
+
+Use tokens when you need a typed key that is independent from a concrete class.
 
 ### `new Container()`
 
@@ -65,63 +67,79 @@ Creates a new dependency container.
 
 ### `container.registerValue(token, value)`
 
-Registers a prebuilt value.
-
-Values are stored in the singleton cache, so resolving the same token always
-returns the same instance.
+Registers a prebuilt value under a token or string key.
 
 ```ts
 container.registerValue(CONFIG, { apiUrl: 'https://example.dev' })
+container.registerValue('port', 3000)
 ```
+
+Values are stored in the singleton cache, so resolving the same key always
+returns the same value.
 
 ### `container.registerClass(token, Class, scope?)`
 
-Registers a class provider for a token.
+Registers a class provider.
 
-- `singleton` by default: the instance is created once and reused
-- `transient`: a new instance is created on every `resolve`
+- `token` can be a typed token, a string, or a class
+- `scope` defaults to `'singleton'`
+- use `'transient'` to create a new instance on every `resolve`
 
 ```ts
-container.registerClass(LOGGER, Logger, 'singleton')
-container.registerClass(API, ApiClient, 'transient')
+container.registerClass(Logger, Logger)
+container.registerClass(ApiClient, ApiClient, 'transient')
 ```
 
 ### `container.resolve(token)`
 
-Resolves a dependency by token.
-
-Throws if no provider has been registered for that token.
+Resolves a dependency by token, string key, or class.
 
 ```ts
-const logger = container.resolve(LOGGER)
+const logger = container.resolve(Logger)
+const config = container.resolve(CONFIG)
 ```
+
+Throws an `Error` if no value or provider has been registered for the requested
+key.
 
 ### `@Inject(tokens)`
 
-Declares the constructor dependencies for a class.
+Declares constructor dependencies for a class.
 
-The order of tokens must match the order of constructor parameters.
+The order of tokens must match the constructor parameter order.
 
 ```ts
-@Inject([CONFIG, LOGGER])
+@Inject([CONFIG, Logger])
 class ApiClient {
   constructor(config: AppConfig, logger: Logger) {}
 }
 ```
 
-## Container behavior
+The container does not inspect TypeScript types at runtime. If a class has
+dependencies, you must declare them explicitly with `@Inject(...)`.
+
+## Container Behavior
 
 - `registerValue` always stores the value in the singleton cache
 - class dependencies are resolved recursively through `resolve`
-- singleton instances are created lazily on first resolution
-- transient instances are never cached
+- singleton providers are created lazily on first resolution
+- transient providers are never cached
+- classes without `@Inject(...)` are constructed with no dependencies
+
+## Choosing Keys
+
+- prefer `createToken<T>(...)` for typed non-class dependencies such as config,
+  clients, or interfaces
+- use class tokens when the class itself is the public key
+- string keys work, but they are not type-safe
 
 ## Limitations
 
-- dependencies are declared explicitly with `@Inject(...)`; constructor types are not read automatically
-- the container only supports class providers and value providers
+- dependencies must be declared explicitly with `@Inject(...)`
+- only value providers and class providers are supported
 - circular dependencies are not handled specially
-- tokens are compared by identity, so you must use the same token instance for registration and resolution
+- tokens are compared by identity, so registration and resolution must use the
+  same token instance
 
 ## Exports
 
