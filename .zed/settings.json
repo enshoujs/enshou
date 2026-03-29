@@ -1,6 +1,15 @@
 {
-  "language_servers": ["vtsls", "oxfmt", "oxlint", "codebook", "json-language-server"],
+  "language_servers": [
+    "vtsls",
+    "oxfmt",
+    "oxlint",
+    "codebook",
+    "json-language-server"
+  ],
   "prettier": { "allowed": false },
   "format_on_save": "on",
-  "formatter": [{ "language_server": { "name": "oxfmt" } }, { "code_action": "source.fixAll.oxc" }]
+  "formatter": [
+    { "language_server": { "name": "oxfmt" } },
+    { "code_action": "source.fixAll.oxc" }
+  ]
 }

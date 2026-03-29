@@ -122,9 +122,11 @@ export default defineConfig({
 ```ts
 export default defineConfig((options) => ({
   entry: ['src/index.ts'],
-  plugins: [SomePlugin(), options.watch && DevPlugin(), !options.watch && ProdPlugin()].filter(
-    Boolean,
-  ),
+  plugins: [
+    SomePlugin(),
+    options.watch && DevPlugin(),
+    !options.watch && ProdPlugin(),
+  ].filter(Boolean),
 }))
 ```
 

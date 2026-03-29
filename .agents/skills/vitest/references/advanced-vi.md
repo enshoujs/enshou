@@ -175,7 +175,9 @@ await vi.waitFor(
 )
 
 // Wait for truthy value
-const element = await vi.waitUntil(() => document.querySelector('.loaded'), { timeout: 5000 })
+const element = await vi.waitUntil(() => document.querySelector('.loaded'), {
+  timeout: 5000,
+})
 ```
 
 ## Mock Object

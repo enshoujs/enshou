@@ -144,7 +144,10 @@ Retry until passes:
 await expect.poll(() => fetchStatus()).toBe('ready')
 
 await expect
-  .poll(() => document.querySelector('.element'), { interval: 100, timeout: 5000 })
+  .poll(() => document.querySelector('.element'), {
+    interval: 100,
+    timeout: 5000,
+  })
   .toBeTruthy()
 ```
 
@@ -173,7 +176,8 @@ expect.extend({
     const pass = received >= floor && received <= ceiling
     return {
       pass,
-      message: () => `expected ${received} to be within range ${floor} - ${ceiling}`,
+      message: () =>
+        `expected ${received} to be within range ${floor} - ${ceiling}`,
     }
   },
 })

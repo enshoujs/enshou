@@ -1,8 +1,8 @@
+import type { Class } from '@enshou/shared'
+
 import type { Token } from './token'
 
-import { INJECTS_KEY, type InjectableClass } from './metadata'
-
-type Class<T> = new (...args: any[]) => T
+import { INJECTS_KEY } from './inject'
 
 export type Scope = 'singleton' | 'transient'
 
@@ -13,14 +13,24 @@ interface ClassProvider<T> {
 }
 
 export class Container {
-  private readonly providers: Map<Token<unknown>, ClassProvider<any>> = new Map()
-  private readonly singletonCache: Map<Token<unknown>, unknown> = new Map()
+  private readonly providers: Map<
+    Token<unknown> | string | Class<any>,
+    ClassProvider<any>
+  > = new Map()
+  private readonly singletonCache: Map<
+    Token<unknown> | string | Class<any>,
+    unknown
+  > = new Map()
 
-  registerValue(token: Token<unknown>, value: unknown): void {
+  registerValue(token: Token<unknown> | string, value: unknown): void {
     this.singletonCache.set(token, value)
   }
 
-  registerClass(token: Token<unknown>, value: Class<any>, scope: Scope = 'singleton'): void {
+  registerClass(
+    token: Token<unknown> | string | Class<any>,
+    value: Class<any>,
+    scope: Scope = 'singleton',
+  ): void {
     this.providers.set(token, {
       kind: 'class',
       useClass: value,
@@ -28,13 +38,14 @@ export class Container {
     })
   }
 
-  resolve<T>(token: Token<T>): T {
-    if (this.singletonCache.has(token)) return this.singletonCache.get(token) as T
+  resolve<T>(token: Token<T> | string | Class<any>): T {
+    if (this.singletonCache.has(token))
+      return this.singletonCache.get(token) as T
 
     const provider = this.providers.get(token)
     if (!provider) throw Error(`No provider for ${String(token)}`)
 
-    const deps = ((provider.useClass as InjectableClass<any>)[INJECTS_KEY] ?? []).map(
+    const deps = ((provider.useClass as any)[INJECTS_KEY] ?? []).map(
       this.resolve.bind(this),
     )
     const value = new provider.useClass(...deps)

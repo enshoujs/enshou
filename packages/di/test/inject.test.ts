@@ -1,7 +1,7 @@
 import { expect, it } from 'vitest'
 
 import { createToken, Inject } from '../src'
-import { INJECTS_KEY } from '../src/metadata'
+import { INJECTS_KEY } from '../src/inject'
 
 it('should save inject metadata on class', () => {
   const TOKEN = createToken('token')

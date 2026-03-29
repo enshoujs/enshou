@@ -1,0 +1,14 @@
+{
+  "name": "example-core",
+  "scripts": {
+    "dev": "bun --hot src/index.ts"
+  },
+  "dependencies": {
+    "@enshou/core": "workspace:*",
+    "@enshou/di": "workspace:*",
+    "hono": "catalog:hono"
+  },
+  "devDependencies": {
+    "@typescript/native-preview": "catalog:tooling"
+  }
+}
