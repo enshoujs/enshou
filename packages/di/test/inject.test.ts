@@ -1,4 +1,5 @@
 import { expect, it } from 'vitest'
+
 import { createToken, Inject } from '../src'
 import { INJECTS_KEY } from '../src/metadata'
 

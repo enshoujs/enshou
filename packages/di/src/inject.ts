@@ -1,5 +1,6 @@
-import { INJECTS_KEY, type InjectableClass } from './metadata'
 import type { Token } from './token'
+
+import { INJECTS_KEY, type InjectableClass } from './metadata'
 
 type Class<T> = new (...args: any[]) => T
 

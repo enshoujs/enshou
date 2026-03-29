@@ -90,7 +90,6 @@ This file is for coding agents working in the `enshou` repository.
 - Only named exports for library code.
 - Use `export type` for type-only re-exports.
 - Use `import type` for type-only imports.
-- Mixed value/type imports are acceptable when clear, for example `import { X, type Y } from './mod'`.
 - Keep imports minimal and direct.
 - Use relative imports inside a package and workspace package imports for cross-package usage.
 - Config files may use `export default defineConfig(...)`; runtime/library modules should prefer named exports.

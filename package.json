@@ -2,7 +2,7 @@
   "name": "enshou",
   "scripts": {
     "build": "pnpm run -r build",
-    "check": "oxfmt && oxlint --fix && tsgo",
+    "check": "oxfmt && oxlint --fix",
     "prepare": "lefthook install"
   },
   "devDependencies": {

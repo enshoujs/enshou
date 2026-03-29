@@ -33,8 +33,8 @@ Add type declarations to `tsconfig.json`:
 ```jsonc
 {
   "compilerOptions": {
-    "types": ["rolldown-plugin-wasm/types"]
-  }
+    "types": ["rolldown-plugin-wasm/types"],
+  },
 }
 ```
 
@@ -107,17 +107,17 @@ add(1, 2)
 wasm({
   maxFileSize: 14 * 1024, // Max size for inline (default: 14KB)
   fileName: '[hash][extname]', // Output file name pattern
-  publicPath: '',         // Prefix for non-inlined file paths
-  targetEnv: 'auto',      // 'auto' | 'auto-inline' | 'browser' | 'node'
+  publicPath: '', // Prefix for non-inlined file paths
+  targetEnv: 'auto', // 'auto' | 'auto-inline' | 'browser' | 'node'
 })
 ```
 
-| Option | Default | Description |
-|--------|---------|-------------|
-| `maxFileSize` | `14 * 1024` | Max file size for inlining. Set to `0` to always copy. |
-| `fileName` | `'[hash][extname]'` | Pattern for emitted WASM files |
-| `publicPath` | — | Prefix for non-inlined WASM file paths |
-| `targetEnv` | `'auto'` | `'auto'` detects at runtime; `'browser'` omits Node builtins; `'node'` omits fetch |
+| Option        | Default             | Description                                                                        |
+| ------------- | ------------------- | ---------------------------------------------------------------------------------- |
+| `maxFileSize` | `14 * 1024`         | Max file size for inlining. Set to `0` to always copy.                             |
+| `fileName`    | `'[hash][extname]'` | Pattern for emitted WASM files                                                     |
+| `publicPath`  | —                   | Prefix for non-inlined WASM file paths                                             |
+| `targetEnv`   | `'auto'`            | `'auto'` detects at runtime; `'browser'` omits Node builtins; `'node'` omits fetch |
 
 ## Related Options
 
