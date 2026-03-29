@@ -122,15 +122,19 @@ The default path is `'/'`.
 
 ## Handler Notes
 
-Handlers are passed directly to Hono. If a handler uses `this`, prefer an arrow
-function class field:
+Handlers are passed directly to Hono.
 
 ```ts
 @Get('/')
 list = (c: Context) => c.json(this.userService.getUsers())
 ```
 
-Using an unbound class method may lose the controller instance context.
+```ts
+@Get('/')
+list(c: Context) {
+ c.json(this.userService.getUsers())
+}
+```
 
 ## Runtime Behavior
 
@@ -152,6 +156,14 @@ Using an unbound class method may lose the controller instance context.
 ## Exports
 
 ```ts
-import { Application, Controller, Get, Post, Put, Patch, Delete } from '@enshou/core'
+import {
+  Application,
+  Controller,
+  Get,
+  Post,
+  Put,
+  Patch,
+  Delete,
+} from '@enshou/core'
 import type { ApplicationOptions } from '@enshou/core'
 ```
