@@ -24,8 +24,8 @@
   },
   "devDependencies": {
     "@enshou/di": "workspace:*",
-    "@typescript/native-preview": "catalog:",
-    "tsdown": "catalog:",
-    "vitest": "catalog:"
+    "@typescript/native-preview": "catalog:tooling",
+    "tsdown": "catalog:tooling",
+    "vitest": "catalog:testing"
   }
 }

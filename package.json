@@ -6,7 +6,7 @@
     "prepare": "lefthook install"
   },
   "devDependencies": {
-    "@typescript/native-preview": "catalog:",
+    "@typescript/native-preview": "catalog:tooling",
     "lefthook": "^2.1.4",
     "oxfmt": "^0.42.0",
     "oxlint": "^1.57.0",

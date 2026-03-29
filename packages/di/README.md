@@ -5,12 +5,6 @@ A small dependency injection container for TypeScript.
 It gives you a typed token system, a simple container, and an explicit
 `@Inject(...)` decorator for constructor dependencies.
 
-## Installation
-
-```bash
-pnpm add @enshou/di
-```
-
 ## Quick example
 
 ```ts

@@ -20,11 +20,14 @@
   },
   "scripts": {
     "build": "tsdown",
+    "test": "vitest run",
     "prepublishOnly": "pnpm build"
   },
   "devDependencies": {
-    "@typescript/native-preview": "catalog:",
-    "tsdown": "catalog:",
-    "vitest": "catalog:"
+    "@swc/core": "catalog:tooling",
+    "@typescript/native-preview": "catalog:tooling",
+    "tsdown": "catalog:tooling",
+    "unplugin-swc": "catalog:tooling",
+    "vitest": "catalog:testing"
   }
 }

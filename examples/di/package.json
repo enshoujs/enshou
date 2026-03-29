@@ -7,6 +7,6 @@
     "@enshou/di": "workspace:*"
   },
   "devDependencies": {
-    "@typescript/native-preview": "catalog:"
+    "@typescript/native-preview": "catalog:tooling"
   }
 }

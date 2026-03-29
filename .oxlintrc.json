@@ -5,5 +5,5 @@
     "typeAware": true,
     "typeCheck": true
   },
-  "ignorePatterns": ["**/node_modules/**"]
+  "ignorePatterns": ["**/node_modules/**", "**/dist/**"]
 }

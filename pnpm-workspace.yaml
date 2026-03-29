@@ -2,7 +2,11 @@ packages:
   - 'packages/*'
   - 'examples/*'
 
-catalog:
-  '@typescript/native-preview': ^7.0.0-dev.20260328.1
-  tsdown: ^0.21.7
-  vitest: ^4.1.2
+catalogs:
+  tooling:
+    '@swc/core': ^1.15.21
+    '@typescript/native-preview': ^7.0.0-dev.20260328.1
+    tsdown: ^0.21.7
+    unplugin-swc: ^1.5.9
+  testing:
+    vitest: ^4.1.2
