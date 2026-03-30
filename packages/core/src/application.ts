@@ -30,7 +30,7 @@ export class Application {
       // this order is important
       const instance = this.container.resolve<any>(Controller)
       const routes = (Controller as any)[ROUTE_KEY] || []
-      //
+      // routes are initialized lazily
 
       for (const route of routes) {
         const path = `${prefix}${route.path}`.replace(/\/+/g, '/')
