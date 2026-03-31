@@ -25,7 +25,7 @@ type CreateUserData = v.InferOutput<typeof CreateUserSchema>
 class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @Post('', CreateUserSchema)
+  @Post('/', CreateUserSchema)
   createUser(c: Ctx<CreateUserData>) {
     const input = c.req.valid('json')
     return c.json(this.userService.createUser(input), 201)
