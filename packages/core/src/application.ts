@@ -1,14 +1,18 @@
-import type { Class } from '@enshou/shared'
-
 import { Container } from '@enshou/di'
+import { normalizePath, type Class } from '@enshou/shared'
 import { Hono } from 'hono'
+
+import type { RouteMetadata } from './decorators/methods'
+import type { ValidatorAdapter } from './validation'
 
 import { PREFIX_KEY } from './decorators/controller'
 import { ROUTE_KEY } from './decorators/methods'
+import { validate } from './validation'
 
 export interface ApplicationOptions {
-  controllers: Class<any>[]
-  services: Class<any>[]
+  controllers?: Class<any>[]
+  services?: Class<any>[]
+  validator?: ValidatorAdapter<any>
 }
 
 export class Application {
@@ -17,24 +21,35 @@ export class Application {
   constructor(private options: ApplicationOptions) {}
 
   instantiate(): Hono {
-    for (const Controller of this.options.controllers)
-      this.container.registerClass(Controller, Controller)
-    for (const Service of this.options.services)
-      this.container.registerClass(Service, Service)
+    const controllers = this.options.controllers ?? []
+    const services = this.options.services ?? []
+
+    for (const c of controllers) this.container.registerClass(c, c)
+    for (const s of services) this.container.registerClass(s, s)
 
     const app = new Hono()
 
-    for (const Controller of this.options.controllers) {
-      const prefix = (Controller as any)[PREFIX_KEY]
+    for (const controller of controllers) {
+      const prefix = normalizePath((controller as any)[PREFIX_KEY] ?? '')
 
-      // this order is important
-      const instance = this.container.resolve<any>(Controller)
-      const routes = (Controller as any)[ROUTE_KEY] || []
-      // routes are initialized lazily
+      const instance = this.container.resolve<any>(controller)
+      const routes: RouteMetadata[] = (controller as any)[ROUTE_KEY] ?? []
 
       for (const route of routes) {
-        const path = `${prefix}${route.path}`.replace(/\/+/g, '/')
-        app.on(route.method, path, instance[route.handler].bind(instance))
+        const path = normalizePath(`${prefix}/${route.path}`)
+        const handler = instance[route.handler].bind(instance)
+
+        if (route.schema && this.options.validator) {
+          app.on(
+            route.method,
+            path,
+            validate(route.schema, this.options.validator),
+            handler,
+          )
+          continue
+        }
+
+        app.on(route.method, path, handler)
       }
     }
 

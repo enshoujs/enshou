@@ -12,6 +12,17 @@ export const HttpMethod = {
 export type HttpMethod = (typeof HttpMethod)[keyof typeof HttpMethod]
 
 export function normalizePath(path: string): string {
-  if (path === '') return '/'
-  return path.startsWith('/') ? path : `/${path}`
+  const normalized = path.trim().replace(/\/+/g, '/')
+
+  if (normalized === '' || normalized === '/') return '/'
+
+  const withLeadingSlash = normalized.startsWith('/')
+    ? normalized
+    : `/${normalized}`
+
+  return withLeadingSlash.endsWith('/')
+    ? withLeadingSlash.slice(0, -1)
+    : withLeadingSlash
 }
+
+export type Override<A, B> = Omit<A, keyof B> & B

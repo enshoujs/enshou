@@ -3,20 +3,33 @@
 `@enshou/core` is a small decorator-based HTTP layer built on top of
 [`hono`](https://hono.dev/) and `@enshou/di`.
 
-It lets you declare controllers with route decorators, register services, and
-build a Hono application from those classes.
+It lets you declare controllers with route decorators, resolve them through the
+DI container, and instantiate a Hono application from those classes.
 
 ## Quick Example
 
 ```ts
-import type { Context } from 'hono'
-
-import { Application, Controller, Get } from '@enshou/core'
+import { Application, Controller, Post, type Ctx } from '@enshou/core'
 import { Inject } from '@enshou/di'
+import { valibotAdapter } from '@enshou/valibot'
+import * as v from 'valibot'
+
+const CreateUserSchema = v.object({
+  json: v.object({
+    name: v.pipe(v.string(), v.minLength(1)),
+    age: v.pipe(v.number(), v.integer(), v.minValue(18)),
+  }),
+})
+
+type CreateUserInput = v.InferOutput<typeof CreateUserSchema>['json']
+type CreateUserContext = Ctx<v.InferOutput<typeof CreateUserSchema>>
 
 class UserService {
-  getUsers() {
-    return [{ id: 1, name: 'Alice' }]
+  createUser(input: CreateUserInput) {
+    return {
+      id: 1,
+      ...input,
+    }
   }
 }
 
@@ -25,18 +38,20 @@ class UserService {
 class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @Get('/all')
-  getUsers = (c: Context) => {
-    return c.json(this.userService.getUsers())
+  @Post('/', CreateUserSchema)
+  createUser(c: CreateUserContext) {
+    const input = c.req.valid('json')
+    return c.json(this.userService.createUser(input), 201)
   }
 }
 
-const application = new Application({
+const app = new Application({
   controllers: [UserController],
   services: [UserService],
+  validator: valibotAdapter(),
 })
 
-export default application.instantiate()
+export default app.instantiate()
 ```
 
 ## Concepts
@@ -58,6 +73,24 @@ services.
 Constructor dependencies are declared with `@Inject(...)` from `@enshou/di`.
 `@enshou/core` does not infer constructor parameter types automatically.
 
+### Validation
+
+Routes can optionally declare a schema as the second argument to a route
+decorator. If the application is configured with a `validator`, the request data
+is parsed before the handler runs.
+
+`@enshou/core` passes this object to the validator adapter:
+
+```ts
+{
+  json,
+  query,
+  param,
+}
+```
+
+Validated values are then exposed through Hono's `c.req.valid(...)` helpers.
+
 ## API
 
 ### `new Application(options)`
@@ -65,9 +98,10 @@ Constructor dependencies are declared with `@Inject(...)` from `@enshou/di`.
 Creates an application builder.
 
 ```ts
-const application = new Application({
+const app = new Application({
   controllers: [UserController],
   services: [UserService],
+  validator: valibotAdapter(),
 })
 ```
 
@@ -75,8 +109,9 @@ const application = new Application({
 
 ```ts
 type ApplicationOptions = {
-  controllers: Array<new (...args: any[]) => any>
-  services: Array<new (...args: any[]) => any>
+  controllers?: Array<new (...args: any[]) => any>
+  services?: Array<new (...args: any[]) => any>
+  validator?: ValidatorAdapter<any>
 }
 ```
 
@@ -86,7 +121,7 @@ Registers the configured controllers and services in an internal DI container
 and returns a `Hono` application.
 
 ```ts
-const app = application.instantiate()
+const hono = app.instantiate()
 ```
 
 ### `@Controller(prefix?)`
@@ -98,27 +133,65 @@ Sets the route prefix for a controller.
 class UserController {}
 ```
 
-The default prefix is an empty string.
+The default prefix is `'/'`.
 
 ### Route Decorators
 
 The package exports these decorators:
 
-- `@Get(path?)`
-- `@Post(path?)`
-- `@Put(path?)`
-- `@Patch(path?)`
-- `@Delete(path?)`
+- `@Get(path, schema?)`
+- `@Post(path, schema?)`
+- `@Put(path, schema?)`
+- `@Patch(path, schema?)`
+- `@Delete(path, schema?)`
 
 Each decorator registers a route handler on the controller. They can be applied
 to class methods or class fields.
 
 ```ts
-@Get('/')
-list = (c: Context) => c.text('ok')
+@Post('/', CreateUserSchema)
+createUser(c: CreateUserContext) {
+  const input = c.req.valid('json')
+  return c.json(input, 201)
+}
 ```
 
-The default path is `'/'`.
+### `Ctx<Out, E>`
+
+`Ctx` is a typed alias for `hono`'s `Context` that lets you describe validated
+output data and environment overrides.
+
+```ts
+type CreateUserContext = Ctx<v.InferOutput<typeof CreateUserSchema>>
+```
+
+### `GlobalEnv`
+
+`GlobalEnv` can be extended with module augmentation to describe shared Hono
+environment bindings and variables.
+
+```ts
+declare module '@enshou/core' {
+  interface GlobalEnv {
+    Variables: {
+      requestId: string
+    }
+  }
+}
+```
+
+### `ValidatorAdapter<Schema>`
+
+Validator adapters let `Application` integrate with a schema library.
+
+```ts
+interface ValidatorAdapter<Schema = unknown> {
+  name: string
+  parse(schema: Schema, value: unknown): unknown
+}
+```
+
+See `@enshou/valibot` for the official Valibot adapter.
 
 ## Handler Notes
 
@@ -126,13 +199,13 @@ Handlers are passed directly to Hono.
 
 ```ts
 @Get('/')
-list = (c: Context) => c.json(this.userService.getUsers())
+list = (c) => c.text('ok')
 ```
 
 ```ts
 @Get('/')
-list(c: Context) {
- c.json(this.userService.getUsers())
+list(c) {
+  return c.text('ok')
 }
 ```
 
@@ -144,12 +217,15 @@ list(c: Context) {
 - routes are collected from decorators and attached to the Hono app during
   `instantiate()`
 - controller prefixes and route paths are normalized into a single path
+- validation middleware runs only when both a route schema and `options.validator`
+  are present
 
 ## Limitations
 
 - only classes listed in `controllers` and `services` are registered
 - dependency injection still requires explicit `@Inject(...)` metadata from
   `@enshou/di`
+- validation depends on an external adapter such as `@enshou/valibot`
 - there is no module system, provider factory API, or lifecycle hook system in
   this package
 
@@ -159,11 +235,16 @@ list(c: Context) {
 import {
   Application,
   Controller,
+  Delete,
   Get,
+  Patch,
   Post,
   Put,
-  Patch,
-  Delete,
 } from '@enshou/core'
-import type { ApplicationOptions } from '@enshou/core'
+import type {
+  ApplicationOptions,
+  Ctx,
+  GlobalEnv,
+  ValidatorAdapter,
+} from '@enshou/core'
 ```

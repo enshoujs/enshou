@@ -6,6 +6,7 @@ export interface RouteDefinition {
   method: HttpMethod
   path: string
   handler: string
+  schema: any
 }
 
 type RouteHandler = (...args: any[]) => any
@@ -19,10 +20,17 @@ type RouteFieldDecorator = (
 ) => (initialValue: RouteHandler) => RouteHandler
 type RouteDecorator = RouteMethodDecorator & RouteFieldDecorator
 
-type RouteDecoratorFactory = (path?: string) => RouteDecorator
+type RouteDecoratorFactory = (path: string, schema?: any) => RouteDecorator
+
+export interface RouteMetadata {
+  method: HttpMethod
+  path: string
+  handler: string
+  schema: any
+}
 
 function createMethodDecorator(method: HttpMethod): RouteDecoratorFactory {
-  return function (path: string = '/') {
+  return function (path: string, schema?: any) {
     function decorator(
       _value: RouteHandler,
       context: ClassMethodDecoratorContext<object, RouteHandler>,
@@ -42,7 +50,8 @@ function createMethodDecorator(method: HttpMethod): RouteDecoratorFactory {
           method,
           path: normalizePath(path),
           handler: String(context.name),
-        })
+          schema,
+        } satisfies RouteMetadata)
       })
 
       if (context.kind === 'method') return
