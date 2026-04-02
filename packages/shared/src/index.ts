@@ -24,5 +24,3 @@ export function normalizePath(path: string): string {
     ? withLeadingSlash.slice(0, -1)
     : withLeadingSlash
 }
-
-export type Override<A, B> = Omit<A, keyof B> & B
