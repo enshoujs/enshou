@@ -1,4 +1,6 @@
-import { Application, Controller, type Ctx, Post } from '@enshou/core'
+import type { Ctx } from '@enshou/core'
+
+import { Application, Controller, Post } from '@enshou/core'
 import { Inject } from '@enshou/di'
 import { valibotAdapter } from '@enshou/valibot'
 import * as v from 'valibot'

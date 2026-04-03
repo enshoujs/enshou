@@ -125,12 +125,7 @@ Mix strings, glob patterns, and object entries in an array:
 
 ```ts
 export default defineConfig({
-  entry: [
-    'src/*',
-    '!src/foo.ts',
-    { main: 'index.ts' },
-    { 'lib/*': ['src/*.ts', '!src/bar.ts'] },
-  ],
+  entry: ['src/*', '!src/foo.ts', { main: 'index.ts' }, { 'lib/*': ['src/*.ts', '!src/bar.ts'] }],
 })
 ```
 

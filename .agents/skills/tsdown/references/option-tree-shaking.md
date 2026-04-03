@@ -176,11 +176,7 @@ export default defineConfig({
   entry: ['src/index.ts'],
   treeshake: {
     moduleSideEffects: (id) => {
-      return (
-        id.includes('.css') ||
-        id.includes('polyfill') ||
-        id.includes('side-effect')
-      )
+      return id.includes('.css') || id.includes('polyfill') || id.includes('side-effect')
     },
   },
 })

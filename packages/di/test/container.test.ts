@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest'
 
-import { Container, createToken, Inject } from '../src'
+import { Container, Inject, createToken } from '../src'
 
 const container = new Container()
 

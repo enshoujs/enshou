@@ -5,16 +5,11 @@ export interface ValidatorAdapter<Schema = unknown> {
   parse(schema: Schema, value: unknown): unknown
 }
 
-export function validate(
-  schema: any,
-  validator: ValidatorAdapter,
-): MiddlewareHandler {
+export function validate(schema: any, validator: ValidatorAdapter): MiddlewareHandler {
   return async (c: Context, next: Next): Promise<void> => {
     const query = c.req.query()
     const json =
-      c.req.header('Content-Type') === 'application/json'
-        ? await c.req.json()
-        : undefined
+      c.req.header('Content-Type') === 'application/json' ? await c.req.json() : undefined
     const param = c.req.param()
 
     const data = {

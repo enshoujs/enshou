@@ -12,7 +12,5 @@
       ["value-parent", "value-sibling", "value-index"],
       "unknown"
     ]
-  },
-  "printWidth": 80,
-  "ignorePatterns": ["**/dist/**", "**/node_modules/**"]
+  }
 }

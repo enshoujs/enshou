@@ -16,11 +16,7 @@ export function normalizePath(path: string): string {
 
   if (normalized === '' || normalized === '/') return '/'
 
-  const withLeadingSlash = normalized.startsWith('/')
-    ? normalized
-    : `/${normalized}`
+  const withLeadingSlash = normalized.startsWith('/') ? normalized : `/${normalized}`
 
-  return withLeadingSlash.endsWith('/')
-    ? withLeadingSlash.slice(0, -1)
-    : withLeadingSlash
+  return withLeadingSlash.endsWith('/') ? withLeadingSlash.slice(0, -1) : withLeadingSlash
 }

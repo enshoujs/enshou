@@ -46,10 +46,7 @@ interface MyButtonProps {
   onClick?: () => void
 }
 
-export const MyButton: React.FC<MyButtonProps> = ({
-  type = 'primary',
-  onClick,
-}) => {
+export const MyButton: React.FC<MyButtonProps> = ({ type = 'primary', onClick }) => {
   return (
     <button className={`btn btn-${type}`} onClick={onClick}>
       Click me

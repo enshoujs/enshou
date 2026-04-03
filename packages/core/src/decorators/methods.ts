@@ -64,13 +64,7 @@ function createMethodDecorator(method: HttpMethod): RouteDecoratorFactory {
 }
 
 export const Get: RouteDecoratorFactory = createMethodDecorator(HttpMethod.GET)
-export const Post: RouteDecoratorFactory = createMethodDecorator(
-  HttpMethod.POST,
-)
+export const Post: RouteDecoratorFactory = createMethodDecorator(HttpMethod.POST)
 export const Put: RouteDecoratorFactory = createMethodDecorator(HttpMethod.PUT)
-export const Patch: RouteDecoratorFactory = createMethodDecorator(
-  HttpMethod.PATCH,
-)
-export const Delete: RouteDecoratorFactory = createMethodDecorator(
-  HttpMethod.DELETE,
-)
+export const Patch: RouteDecoratorFactory = createMethodDecorator(HttpMethod.PATCH)
+export const Delete: RouteDecoratorFactory = createMethodDecorator(HttpMethod.DELETE)

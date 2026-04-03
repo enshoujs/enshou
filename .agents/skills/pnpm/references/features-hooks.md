@@ -114,9 +114,7 @@ Called after the lockfile is generated. Use for post-resolution modifications.
 ```js
 function afterAllResolved(lockfile, context) {
   // Log all resolved packages
-  context.log(
-    `Resolved ${Object.keys(lockfile.packages || {}).length} packages`,
-  )
+  context.log(`Resolved ${Object.keys(lockfile.packages || {}).length} packages`)
 
   // Modify lockfile if needed
   return lockfile

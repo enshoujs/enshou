@@ -176,8 +176,7 @@ expect.extend({
     const pass = received >= floor && received <= ceiling
     return {
       pass,
-      message: () =>
-        `expected ${received} to be within range ${floor} - ${ceiling}`,
+      message: () => `expected ${received} to be within range ${floor} - ${ceiling}`,
     }
   },
 })

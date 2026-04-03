@@ -232,19 +232,6 @@ list(c) {
 ## Exports
 
 ```ts
-import {
-  Application,
-  Controller,
-  Delete,
-  Get,
-  Patch,
-  Post,
-  Put,
-} from '@enshou/core'
-import type {
-  ApplicationOptions,
-  Ctx,
-  GlobalEnv,
-  ValidatorAdapter,
-} from '@enshou/core'
+import { Application, Controller, Delete, Get, Patch, Post, Put } from '@enshou/core'
+import type { ApplicationOptions, Ctx, GlobalEnv, ValidatorAdapter } from '@enshou/core'
 ```

@@ -1,5 +1,7 @@
+import type { Class } from '@enshou/shared'
+
 import { Container } from '@enshou/di'
-import { normalizePath, type Class } from '@enshou/shared'
+import { normalizePath } from '@enshou/shared'
 import { Hono } from 'hono'
 
 import type { RouteMetadata } from './decorators/methods'
@@ -40,12 +42,7 @@ export class Application {
         const handler = instance[route.handler].bind(instance)
 
         if (route.schema && this.options.validator) {
-          app.on(
-            route.method,
-            path,
-            validate(route.schema, this.options.validator),
-            handler,
-          )
+          app.on(route.method, path, validate(route.schema, this.options.validator), handler)
           continue
         }
 
