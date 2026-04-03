@@ -1,28 +1,53 @@
-import type { Context, MiddlewareHandler, Next } from 'hono'
+import type { Context, MiddlewareHandler, Next, ValidationTargets } from 'hono'
 
-export interface ValidatorAdapter<Schema = unknown> {
-  name: string
-  parse(schema: Schema, value: unknown): unknown
+import { HTTPException } from 'hono/http-exception'
+
+import type { RouteSchema } from './decorators/methods'
+
+export interface ValidationIssue {
+  path: string[] | undefined
+  message: string
 }
 
-export function validate(schema: any, validator: ValidatorAdapter): MiddlewareHandler {
+export interface ValidatorParseResult {
+  success: boolean
+  value: unknown
+  issues: ValidationIssue[]
+}
+
+export interface ValidatorAdapter {
+  name: string
+  parse(schema: any, value: unknown): ValidatorParseResult
+}
+
+export class ValidationError extends Error {
+  constructor(
+    public target: keyof ValidationTargets,
+    public issues: ValidationIssue[],
+  ) {
+    super('Validation Error')
+  }
+}
+
+export function validate(schema: RouteSchema, validator: ValidatorAdapter): MiddlewareHandler {
   return async (c: Context, next: Next): Promise<void> => {
-    const query = c.req.query()
-    const json =
-      c.req.header('Content-Type') === 'application/json' ? await c.req.json() : undefined
-    const param = c.req.param()
+    for (const [key, value] of Object.entries(schema)) {
+      let data = {}
 
-    const data = {
-      json,
-      query,
-      param,
-    } as const
+      if (key === 'json' && c.req.header('Content-Type') === 'application/json') {
+        try {
+          data = await c.req.json()
+        } catch {
+          throw new HTTPException(400, { message: 'Malformed JSON' })
+        }
+      }
+      if (key === 'query') data = c.req.query()
+      if (key === 'param') data = c.req.param()
 
-    const result = validator.parse(schema, data) as any
-
-    if (json) c.req.addValidatedData('json', result.json)
-    if (query) c.req.addValidatedData('query', result.query)
-    if (param) c.req.addValidatedData('param', result.param)
+      const result = validator.parse(value, data)
+      if (!result.success) throw new ValidationError(key as keyof ValidationTargets, result.issues)
+      c.req.addValidatedData(key as any, result.value as any)
+    }
 
     return next()
   }

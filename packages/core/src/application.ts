@@ -4,7 +4,7 @@ import { Container } from '@enshou/di'
 import { normalizePath } from '@enshou/shared'
 import { Hono } from 'hono'
 
-import type { RouteMetadata } from './decorators/methods'
+import type { RouteDefinition } from './decorators/methods'
 import type { ValidatorAdapter } from './validation'
 
 import { PREFIX_KEY } from './decorators/controller'
@@ -14,7 +14,7 @@ import { validate } from './validation'
 export interface ApplicationOptions {
   controllers?: Class<any>[]
   services?: Class<any>[]
-  validator?: ValidatorAdapter<any>
+  validator?: ValidatorAdapter
 }
 
 export class Application {
@@ -35,7 +35,7 @@ export class Application {
       const prefix = normalizePath((controller as any)[PREFIX_KEY] ?? '')
 
       const instance = this.container.resolve<any>(controller)
-      const routes: RouteMetadata[] = (controller as any)[ROUTE_KEY] ?? []
+      const routes: RouteDefinition[] = (controller as any)[ROUTE_KEY] ?? []
 
       for (const route of routes) {
         const path = normalizePath(`${prefix}/${route.path}`)

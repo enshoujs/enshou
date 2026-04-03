@@ -1,12 +1,14 @@
+import type { ValidationTargets } from 'hono'
+
 import { HttpMethod, normalizePath } from '@enshou/shared'
 
-export const ROUTE_KEY: unique symbol = Symbol()
+export type RouteSchema = Partial<Record<keyof ValidationTargets, any>>
 
 export interface RouteDefinition {
   method: HttpMethod
   path: string
   handler: string
-  schema: any
+  schema?: RouteSchema
 }
 
 type RouteHandler = (...args: any[]) => any
@@ -20,17 +22,12 @@ type RouteFieldDecorator = (
 ) => (initialValue: RouteHandler) => RouteHandler
 type RouteDecorator = RouteMethodDecorator & RouteFieldDecorator
 
-type RouteDecoratorFactory = (path: string, schema?: any) => RouteDecorator
+type RouteDecoratorFactory = (path: string, schema?: RouteSchema) => RouteDecorator
 
-export interface RouteMetadata {
-  method: HttpMethod
-  path: string
-  handler: string
-  schema: any
-}
+export const ROUTE_KEY: unique symbol = Symbol()
 
 function createMethodDecorator(method: HttpMethod): RouteDecoratorFactory {
-  return function (path: string, schema?: any) {
+  return function (path: string, schema?: RouteSchema) {
     function decorator(
       _value: RouteHandler,
       context: ClassMethodDecoratorContext<object, RouteHandler>,
@@ -51,7 +48,7 @@ function createMethodDecorator(method: HttpMethod): RouteDecoratorFactory {
           path: normalizePath(path),
           handler: String(context.name),
           schema,
-        } satisfies RouteMetadata)
+        } satisfies RouteDefinition)
       })
 
       if (context.kind === 'method') return

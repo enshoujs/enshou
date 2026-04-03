@@ -1,6 +1,6 @@
 {
-  "name": "@enshou/valibot",
-  "version": "0.0.2",
+  "name": "@enshou/zod",
+  "version": "0.0.1",
   "private": false,
   "license": "Apache-2.0",
   "author": "Ivan Popov <iiivanpopov999@gmail.com>",
@@ -29,12 +29,12 @@
     "hono": "catalog:hono",
     "tsdown": "catalog:tooling",
     "unplugin-swc": "catalog:tooling",
-    "valibot": "catalog:validation",
-    "vitest": "catalog:testing"
+    "vitest": "catalog:testing",
+    "zod": "catalog:validation"
   },
   "peerDependencies": {
     "@enshou/core": "workspace:*",
     "hono": "catalog:hono",
-    "valibot": "catalog:validation"
+    "zod": "catalog:validation"
   }
 }

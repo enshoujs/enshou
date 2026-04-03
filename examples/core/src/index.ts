@@ -1,4 +1,5 @@
 import type { Ctx } from '@enshou/core'
+import type { InferSchema } from '@enshou/valibot'
 
 import { Application, Controller, Post } from '@enshou/core'
 import { Inject } from '@enshou/di'
@@ -14,13 +15,13 @@ class UserService {
   }
 }
 
-const CreateUserSchema = v.object({
+const CreateUserSchema = {
   json: v.object({
     name: v.pipe(v.string(), v.minLength(1)),
     age: v.pipe(v.number(), v.integer(), v.minValue(18)),
   }),
-})
-type CreateUserData = v.InferOutput<typeof CreateUserSchema>
+}
+type CreateUserData = InferSchema<typeof CreateUserSchema>
 
 @Controller('/users')
 @Inject([UserService])
