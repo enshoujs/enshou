@@ -2,32 +2,10 @@ import type { Context, MiddlewareHandler, Next, ValidationTargets } from 'hono'
 
 import { HTTPException } from 'hono/http-exception'
 
-import type { RouteSchema } from './decorators/methods'
+import type { RouteSchema } from '../routing'
+import type { ValidatorAdapter } from './types'
 
-export interface ValidationIssue {
-  path: string[] | undefined
-  message: string
-}
-
-export interface ValidatorParseResult {
-  success: boolean
-  value: unknown
-  issues: ValidationIssue[]
-}
-
-export interface ValidatorAdapter {
-  name: string
-  parse(schema: any, value: unknown): ValidatorParseResult
-}
-
-export class ValidationError extends Error {
-  constructor(
-    public target: keyof ValidationTargets,
-    public issues: ValidationIssue[],
-  ) {
-    super('Validation Error')
-  }
-}
+import { ValidationError } from './validation-error'
 
 export function validate(schema: RouteSchema, validator: ValidatorAdapter): MiddlewareHandler {
   return async (c: Context, next: Next): Promise<void> => {
@@ -45,7 +23,9 @@ export function validate(schema: RouteSchema, validator: ValidatorAdapter): Midd
       if (key === 'param') data = c.req.param()
 
       const result = validator.parse(value, data)
+
       if (!result.success) throw new ValidationError(key as keyof ValidationTargets, result.issues)
+
       c.req.addValidatedData(key as any, result.value as any)
     }
 

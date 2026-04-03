@@ -53,6 +53,9 @@ importers:
       oxlint-tsgolint:
         specifier: ^0.18.1
         version: 0.18.1
+      tsdown:
+        specifier: catalog:tooling
+        version: 0.21.7(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.1)(@typescript/native-preview@7.0.0-dev.20260329.1)
 
   examples/core:
     dependencies:

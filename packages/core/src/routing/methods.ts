@@ -1,59 +1,50 @@
-import type { ValidationTargets } from 'hono'
+import type { AnyFunction } from '@enshou/shared'
 
 import { HttpMethod, normalizePath } from '@enshou/shared'
 
-export type RouteSchema = Partial<Record<keyof ValidationTargets, any>>
+import type { RouteSchema } from './metadata'
 
-export interface RouteDefinition {
-  method: HttpMethod
-  path: string
-  handler: string
-  schema?: RouteSchema
-}
+import { getControllerMetadata } from './metadata'
 
-type RouteHandler = (...args: any[]) => any
 type RouteMethodDecorator = (
-  value: RouteHandler,
-  context: ClassMethodDecoratorContext<object, RouteHandler>,
+  value: AnyFunction,
+  context: ClassMethodDecoratorContext<object, AnyFunction>,
 ) => void
 type RouteFieldDecorator = (
   value: undefined,
-  context: ClassFieldDecoratorContext<object, RouteHandler>,
-) => (initialValue: RouteHandler) => RouteHandler
+  context: ClassFieldDecoratorContext<object, AnyFunction>,
+) => (initialValue: AnyFunction) => AnyFunction
 type RouteDecorator = RouteMethodDecorator & RouteFieldDecorator
-
 type RouteDecoratorFactory = (path: string, schema?: RouteSchema) => RouteDecorator
-
-export const ROUTE_KEY: unique symbol = Symbol()
 
 function createMethodDecorator(method: HttpMethod): RouteDecoratorFactory {
   return function (path: string, schema?: RouteSchema) {
     function decorator(
-      _value: RouteHandler,
-      context: ClassMethodDecoratorContext<object, RouteHandler>,
+      _value: AnyFunction,
+      context: ClassMethodDecoratorContext<object, AnyFunction>,
     ): void
     function decorator(
       _value: undefined,
-      context: ClassFieldDecoratorContext<object, RouteHandler>,
-    ): (initialValue: RouteHandler) => RouteHandler
+      context: ClassFieldDecoratorContext<object, AnyFunction>,
+    ): (initialValue: AnyFunction) => AnyFunction
     function decorator(
-      _value: RouteHandler | undefined,
+      _value: AnyFunction | undefined,
       context:
-        | ClassMethodDecoratorContext<object, RouteHandler>
-        | ClassFieldDecoratorContext<object, RouteHandler>,
-    ): void | ((initialValue: RouteHandler) => RouteHandler) {
+        | ClassMethodDecoratorContext<object, AnyFunction>
+        | ClassFieldDecoratorContext<object, AnyFunction>,
+    ): void | ((initialValue: AnyFunction) => AnyFunction) {
       context.addInitializer(function () {
-        ;((this as any).constructor[ROUTE_KEY] ??= []).push({
+        getControllerMetadata(this.constructor).routes.push({
           method,
           path: normalizePath(path),
           handler: String(context.name),
           schema,
-        } satisfies RouteDefinition)
+        })
       })
 
       if (context.kind === 'method') return
 
-      return (initialValue: RouteHandler) => initialValue
+      return (initialValue: AnyFunction) => initialValue
     }
 
     return decorator
