@@ -6,7 +6,4 @@ export const tsdownBaseConfig: UserConfig = {
   clean: true,
   outExtensions: () => ({ js: '.js', dts: '.d.ts' }),
   dts: { oxc: true },
-  deps: {
-    alwaysBundle: ['@enshou/shared'],
-  },
 }

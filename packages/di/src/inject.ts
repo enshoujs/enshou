@@ -1,5 +1,4 @@
-import type { Class } from '@enshou/shared'
-
+import type { Class } from './container'
 import type { Token } from './token'
 
 export const INJECTS_KEY: unique symbol = Symbol()

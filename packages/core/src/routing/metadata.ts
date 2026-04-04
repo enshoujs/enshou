@@ -1,5 +1,6 @@
-import type { HttpMethod } from '@enshou/shared'
 import type { ValidationTargets } from 'hono'
+
+import type { HttpMethod } from './utils'
 
 const CONTROLLER_METADATA_KEY: unique symbol = Symbol()
 

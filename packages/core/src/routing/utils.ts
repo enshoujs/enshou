@@ -1,4 +1,3 @@
-export type Class<T> = new (...args: any[]) => T
 export type AnyFunction = (...args: any[]) => any
 
 export const HttpMethod = {

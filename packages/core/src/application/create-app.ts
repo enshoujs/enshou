@@ -1,11 +1,11 @@
 import type { Container } from '@enshou/di'
 
-import { normalizePath } from '@enshou/shared'
 import { Hono } from 'hono'
 
 import type { ApplicationOptions } from './application'
 
 import { getControllerMetadata } from '../routing/metadata'
+import { normalizePath } from '../routing/utils'
 import { validate } from '../validation/middleware'
 
 export function createApp(container: Container, options: ApplicationOptions): Hono {

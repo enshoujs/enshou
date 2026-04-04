@@ -1,10 +1,8 @@
-import type { AnyFunction } from '@enshou/shared'
-
-import { HttpMethod, normalizePath } from '@enshou/shared'
-
 import type { RouteSchema } from './metadata'
+import type { AnyFunction } from './utils'
 
 import { getControllerMetadata } from './metadata'
+import { HttpMethod, normalizePath } from './utils'
 
 type RouteMethodDecorator = (
   value: AnyFunction,

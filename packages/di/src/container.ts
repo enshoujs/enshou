@@ -1,8 +1,8 @@
-import type { Class } from '@enshou/shared'
-
 import type { Token } from './token'
 
 import { INJECTS_KEY } from './inject'
+
+export type Class<T> = new (...args: any[]) => T
 
 export type Scope = 'singleton' | 'transient'
 

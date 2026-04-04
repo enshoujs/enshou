@@ -1,5 +1,4 @@
 import type { Provider } from '@enshou/di'
-import type { Class } from '@enshou/shared'
 import type { Context, Hono, Env as HonoEnv } from 'hono'
 import type { HTTPResponseError } from 'hono/types'
 
@@ -8,6 +7,8 @@ import { Container } from '@enshou/di'
 import type { ValidatorAdapter } from '../validation/types'
 
 import { createApp } from './create-app'
+
+type Class<T> = new (...args: any[]) => T
 
 export type ApplicationProvider = Provider<unknown> | Class<any>
 
