@@ -1,84 +1,193 @@
 import { Container, Inject, createToken } from '@enshou/di'
 
-type AppConfig = {
-  appName: string
-  apiUrl: string
+type ShopConfig = {
+  shopName: string
+  apiBaseUrl: string
+  shippingFee: number
 }
 
-const CONFIG = createToken<AppConfig>('config')
-const LOGGER_TOKEN = createToken<Logger>('logger')
-const HTTP_CLIENT_TOKEN = createToken<HttpClient>('http-client')
-const USER_SERVICE_TOKEN = createToken<UserService>('user-service')
-const BOOTSTRAP_TOKEN = createToken<Bootstrap>('bootstrap')
+type Book = {
+  sku: string
+  title: string
+  price: number
+}
 
-const container = new Container()
+type CheckoutItem = {
+  sku: string
+  quantity: number
+}
 
-class Logger {
+type PaymentGateway = {
+  charge(
+    orderId: string,
+    amount: number,
+  ): {
+    confirmationId: string
+    chargedAmount: number
+  }
+}
+
+type Order = {
+  id: string
+  customerEmail: string
+  items: Array<CheckoutItem & { title: string; unitPrice: number; lineTotal: number }>
+  total: number
+}
+
+const CONFIG = createToken<ShopConfig>('shop-config')
+const LOGGER_TOKEN = createToken<AuditLogger>('audit-logger')
+const PAYMENT_GATEWAY_TOKEN = createToken<PaymentGateway>('payment-gateway')
+
+const BOOKS: Record<string, Book> = {
+  'ts-handbook': {
+    sku: 'ts-handbook',
+    title: 'TypeScript Handbook Notes',
+    price: 24,
+  },
+  'clean-arch': {
+    sku: 'clean-arch',
+    title: 'Clean Architecture Workbook',
+    price: 32,
+  },
+  'ship-fast': {
+    sku: 'ship-fast',
+    title: 'Shipping Features Weekly',
+    price: 18,
+  },
+}
+
+class AuditLogger {
+  private messages = 0
+
   log(message: string) {
-    console.log(`[log] ${message}`)
+    this.messages += 1
+    console.log(`[audit ${this.messages}] ${message}`)
   }
 }
 
 @Inject([CONFIG, LOGGER_TOKEN])
-class HttpClient {
+class ProductCatalogClient {
   constructor(
-    private readonly config: AppConfig,
-    private readonly logger: Logger,
+    private readonly config: ShopConfig,
+    private readonly logger: AuditLogger,
   ) {}
 
-  get(path: string) {
-    const url = `${this.config.apiUrl}${path}`
-    this.logger.log(`GET ${url}`)
+  getBook(sku: string): Book {
+    const book = BOOKS[sku]
+
+    if (!book) throw Error(`Book ${sku} was not found in ${this.config.shopName}`)
+
+    this.logger.log(`Fetched ${book.title} from ${this.config.apiBaseUrl}/books/${sku}`)
+    return book
+  }
+}
+
+@Inject([LOGGER_TOKEN])
+class OrderRepository {
+  private nextId = 1
+
+  constructor(private readonly logger: AuditLogger) {}
+
+  save(order: Omit<Order, 'id'>): Order {
+    const createdOrder = {
+      id: `order-${this.nextId++}`,
+      ...order,
+    }
+
+    this.logger.log(`Saved ${createdOrder.id} for ${createdOrder.customerEmail}`)
+    return createdOrder
+  }
+}
+
+@Inject([CONFIG, ProductCatalogClient, OrderRepository, PAYMENT_GATEWAY_TOKEN, LOGGER_TOKEN])
+class CheckoutSession {
+  constructor(
+    private readonly config: ShopConfig,
+    private readonly catalog: ProductCatalogClient,
+    private readonly orders: OrderRepository,
+    private readonly paymentGateway: PaymentGateway,
+    private readonly logger: AuditLogger,
+  ) {}
+
+  checkout(customerEmail: string, items: CheckoutItem[]) {
+    const lineItems = items.map(({ sku, quantity }) => {
+      const book = this.catalog.getBook(sku)
+      const lineTotal = book.price * quantity
+
+      return {
+        sku,
+        quantity,
+        title: book.title,
+        unitPrice: book.price,
+        lineTotal,
+      }
+    })
+
+    const subtotal = lineItems.reduce((sum, item) => sum + item.lineTotal, 0)
+    const total = subtotal + this.config.shippingFee
+    const order = this.orders.save({
+      customerEmail,
+      items: lineItems,
+      total,
+    })
+    const payment = this.paymentGateway.charge(order.id, total)
+
+    this.logger.log(`Checkout finished for ${order.id}`)
 
     return {
-      id: 1,
-      name: 'Ada Lovelace',
+      shop: this.config.shopName,
+      subtotal,
+      shippingFee: this.config.shippingFee,
+      total,
+      payment,
+      order,
     }
   }
 }
 
-@Inject([HTTP_CLIENT_TOKEN, LOGGER_TOKEN])
-class UserService {
-  constructor(
-    private readonly httpClient: HttpClient,
-    private readonly logger: Logger,
-  ) {}
-
-  loadUser(id: number) {
-    this.logger.log(`Loading user ${id}`)
-    return this.httpClient.get(`/users/${id}`)
-  }
-}
-
-@Inject([USER_SERVICE_TOKEN, LOGGER_TOKEN])
-class Bootstrap {
-  constructor(
-    private readonly userService: UserService,
-    private readonly logger: Logger,
-  ) {}
-
-  run() {
-    const user = this.userService.loadUser(1)
-    this.logger.log(`Resolved user: ${user.name}`)
-  }
-}
+const container = new Container()
 
 container.registerValue(CONFIG, {
-  appName: 'di-example',
-  apiUrl: 'https://example.dev/api',
+  shopName: 'Paper Lantern Books',
+  apiBaseUrl: 'https://paper-lantern.example/api',
+  shippingFee: 7,
 })
 
-container.registerClass(LOGGER_TOKEN, Logger, 'singleton')
-container.registerClass(HTTP_CLIENT_TOKEN, HttpClient, 'singleton')
-container.registerClass(USER_SERVICE_TOKEN, UserService, 'singleton')
-container.registerClass(BOOTSTRAP_TOKEN, Bootstrap, 'transient')
+container.registerClass(LOGGER_TOKEN, AuditLogger, 'singleton')
+container.registerClass(ProductCatalogClient, ProductCatalogClient, 'singleton')
+container.registerClass(OrderRepository, OrderRepository, 'singleton')
+container.registerClass(CheckoutSession, CheckoutSession, 'transient')
 
-const bootstrap1 = container.resolve(BOOTSTRAP_TOKEN)
-const bootstrap2 = container.resolve(BOOTSTRAP_TOKEN)
-const logger1 = container.resolve(LOGGER_TOKEN)
-const logger2 = container.resolve(LOGGER_TOKEN)
+container.register({
+  provide: PAYMENT_GATEWAY_TOKEN,
+  useFactory: (resolvedContainer) => {
+    const config = resolvedContainer.resolve(CONFIG)
+    const logger = resolvedContainer.resolve(LOGGER_TOKEN)
 
-console.log('bootstrap singleton?', bootstrap1 === bootstrap2)
-console.log('logger singleton?', logger1 === logger2)
+    return {
+      charge(orderId: string, amount: number) {
+        logger.log(`Charged $${amount} for ${config.shopName} order ${orderId}`)
 
-bootstrap1.run()
+        return {
+          confirmationId: `pay-${orderId}`,
+          chargedAmount: amount,
+        }
+      },
+    }
+  },
+})
+
+const checkoutA = container.resolve(CheckoutSession)
+const checkoutB = container.resolve(CheckoutSession)
+const loggerA = container.resolve(LOGGER_TOKEN)
+const loggerB = container.resolve(LOGGER_TOKEN)
+
+console.log('checkout session reused?', checkoutA === checkoutB)
+console.log('logger reused?', loggerA === loggerB)
+
+const receipt = checkoutA.checkout('mira@paperlantern.dev', [
+  { sku: 'ts-handbook', quantity: 1 },
+  { sku: 'clean-arch', quantity: 2 },
+])
+
+console.log(JSON.stringify(receipt, null, 2))

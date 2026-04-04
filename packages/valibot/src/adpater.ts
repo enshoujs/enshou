@@ -1,12 +1,13 @@
 import type { ValidatorAdapter, ValidatorParseResult } from '@enshou/core'
+import type { GenericSchema } from 'valibot'
 
-import * as v from 'valibot'
+import { safeParse } from 'valibot'
 
 export function valibotAdapter(): ValidatorAdapter {
   return {
     name: 'valibot',
-    parse: (schema: v.GenericSchema, data: unknown): ValidatorParseResult => {
-      const result = v.safeParse(schema, data)
+    parse: (schema: GenericSchema, data: unknown): ValidatorParseResult => {
+      const result = safeParse(schema, data)
 
       return {
         success: result.success,
