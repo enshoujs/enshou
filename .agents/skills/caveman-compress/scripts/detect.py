@@ -10,11 +10,42 @@ COMPRESSIBLE_EXTENSIONS = {".md", ".txt", ".markdown", ".rst"}
 
 # Extensions that are code/config and should be skipped
 SKIP_EXTENSIONS = {
-    ".py", ".js", ".ts", ".tsx", ".jsx", ".json", ".yaml", ".yml",
-    ".toml", ".env", ".lock", ".css", ".scss", ".html", ".xml",
-    ".sql", ".sh", ".bash", ".zsh", ".go", ".rs", ".java", ".c",
-    ".cpp", ".h", ".hpp", ".rb", ".php", ".swift", ".kt", ".lua",
-    ".dockerfile", ".makefile", ".csv", ".ini", ".cfg",
+    ".py",
+    ".js",
+    ".ts",
+    ".tsx",
+    ".jsx",
+    ".json",
+    ".yaml",
+    ".yml",
+    ".toml",
+    ".env",
+    ".lock",
+    ".css",
+    ".scss",
+    ".html",
+    ".xml",
+    ".sql",
+    ".sh",
+    ".bash",
+    ".zsh",
+    ".go",
+    ".rs",
+    ".java",
+    ".c",
+    ".cpp",
+    ".h",
+    ".hpp",
+    ".rb",
+    ".php",
+    ".swift",
+    ".kt",
+    ".lua",
+    ".dockerfile",
+    ".makefile",
+    ".csv",
+    ".ini",
+    ".cfg",
 }
 
 # Patterns that indicate a line is code
@@ -71,9 +102,13 @@ def detect_file_type(filepath: Path) -> str:
     if ext in COMPRESSIBLE_EXTENSIONS:
         return "natural_language"
     if ext in SKIP_EXTENSIONS:
-        return "code" if ext not in {".json", ".yaml", ".yml", ".toml", ".ini", ".cfg", ".env"} else "config"
+        return (
+            "code"
+            if ext not in {".json", ".yaml", ".yml", ".toml", ".ini", ".cfg", ".env"}
+            else "config"
+        )
 
-    # Extensionless files (like CLAUDE.md, TODO) — check content
+    # Extensionless files (like AGENTS.md, TODO) — check content
     if not ext:
         try:
             text = filepath.read_text(errors="ignore")

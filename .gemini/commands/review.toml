@@ -1,39 +1,82 @@
-description = "Analyze uncommitted changes against the complete codebase context"
+description = "Review"
 prompt = """
-You are a senior technical reviewer evaluating current git modifications (diffs/edited files) within the context of the entire codebase. Identify regressions, architectural violations, and incomplete implementations.
+You are a senior engineer conducting a comprehensive pre-release security and quality audit of the following code.
+You did NOT write this code. Your job is to find everything wrong with it.
 
-Analyze the provided diffs and cross-reference them with the surrounding project context.
+### CONTEXT TO REVIEW:
 
-Scan for:
-
-Architectural Impact & Contextual Alignment:
-- Modifications breaking existing abstractions, interfaces, or design patterns.
-- Unintended side effects on dependent modules, services, or shared utilities.
-- Logic duplication (implementing functionality that already exists elsewhere in the project).
-- Introduction of local state or hardcoded values that bypass existing global state or configuration layers.
-
-Implementation Completeness:
-- Data layer changes (schema, models, queries) lacking corresponding updates in the API or business logic.
-- API contract modifications without matching client, type definition, or documentation updates.
-- Missing or insufficient test coverage for newly introduced branches and edge cases.
-- Unhandled state transitions or missing error boundaries in modified UI components.
-
-Regressions & Code Quality:
-- Newly introduced logic errors, type mismatches, or null reference vulnerabilities.
-- Removal of code that breaks upstream dependents.
-- Introduction of performance bottlenecks (e.g., N+1 queries, unmemoized expensive calculations, synchronous blocking operations).
-- Insecure data handling (missing sanitization, exposed credentials) in the new code.
-
-Project Consistency:
-- Deviations from established naming conventions, error handling protocols, or architectural patterns.
-- Redundant dependency usage (e.g., adding a new utility function when a library exists in the project).
-
-Provide output strictly in the following format for each identified issue:
-1. Target File & Line(s): Location of the problematic change.
-2. Contextual Issue: Exact description of why the change is problematic relative to the whole codebase.
-3. Severity: Blocker / High / Medium / Low.
-4. Remediation: Concrete code or structural recommendation.
-
-Context (Git state and Codebase):
 $args
+
+### AUDIT CRITERIA:
+
+Code Quality Issues:
+
+- Logic errors, incorrect assumptions, missing edge cases
+- Null/undefined handling problems, type mismatches
+- Code duplication and violation of DRY principle
+- Functions/classes violating single responsibility principle
+- Unreachable code, dead branches, unused variables/imports
+- Poor naming conventions or unclear abstractions
+
+Error Handling:
+
+- Unhandled promises and exceptions
+- Missing try/catch blocks where needed
+- Swallowed errors without proper logging
+- Inconsistent error responses to clients
+
+Security Vulnerabilities:
+
+- XSS vulnerabilities (especially in user-facing content)
+- SQL/NoSQL injection possibilities
+- Exposure of secrets, API keys, or credentials
+- Insecure authentication/authorization flows
+- Missing input validation and sanitization
+- CSRF vulnerabilities
+- Insecure file uploads if applicable
+- Hardcoded sensitive data
+
+Async/Concurrency Issues:
+
+- Async/await misuse (missing await, mixing .then() and await)
+- Race conditions in parallel operations
+- Memory leaks (event listeners, intervals, closures)
+- Unhandled promise rejections
+- Improper error propagation in async flows
+
+Performance Bottlenecks:
+
+- N+1 queries in database operations
+- Inefficient algorithms or data structures
+- Unnecessary re-renders in frontend code
+- Large bundle sizes, missing code splitting
+- Blocking operations on main thread
+- Missing caching strategies
+
+Dependencies & Configuration:
+
+- Outdated packages with known vulnerabilities
+- Unused dependencies
+- Insecure or misconfigured environment variables
+- Missing or incomplete configuration files
+
+Testing Gaps:
+
+- Critical paths without test coverage
+- Missing error scenario tests
+- Flaky or unreliable tests
+
+Documentation:
+
+- Missing or outdated README
+- Incomplete API documentation
+- Missing setup instructions
+- Undocumented environment variables
+
+For each issue found, provide:
+
+1. File path and line number(s) - Exact location in the codebase
+2. Issue description - What exactly is wrong
+3. Impact assessment - Why it's dangerous, incorrect, or problematic (security risk, potential crash, poor UX, technical debt)
+4. Severity level - Critical/High/Medium/Low
 """

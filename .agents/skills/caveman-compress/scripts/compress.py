@@ -6,15 +6,14 @@ Usage:
     python scripts/compress.py <filepath>
 """
 
+import json
 import os
 import re
 import subprocess
 from pathlib import Path
 from typing import List
 
-OUTER_FENCE_REGEX = re.compile(
-    r"\A\s*(`{3,}|~{3,})[^\n]*\n(.*)\n\1\s*\Z", re.DOTALL
-)
+OUTER_FENCE_REGEX = re.compile(r"\A\s*(`{3,}|~{3,})[^\n]*\n(.*)\n\1\s*\Z", re.DOTALL)
 
 
 def strip_llm_wrapper(text: str) -> str:
@@ -24,47 +23,64 @@ def strip_llm_wrapper(text: str) -> str:
         return m.group(2)
     return text
 
+
 from .detect import should_compress
 from .validate import validate
 
 MAX_RETRIES = 2
 
 
-# ---------- Claude Calls ----------
+# ---------- OpenCode Calls ----------
 
 
-def call_claude(prompt: str) -> str:
-    api_key = os.environ.get("ANTHROPIC_API_KEY")
-    if api_key:
-        try:
-            import anthropic
+def call_opencode(prompt: str, files: list[Path] | None = None) -> str:
+    command = ["opencode", "run", "--format", "json"]
 
-            client = anthropic.Anthropic(api_key=api_key)
-            msg = client.messages.create(
-                model=os.environ.get("CAVEMAN_MODEL", "claude-sonnet-4-5"),
-                max_tokens=8192,
-                messages=[{"role": "user", "content": prompt}],
-            )
-            return strip_llm_wrapper(msg.content[0].text.strip())
-        except ImportError:
-            pass  # anthropic not installed, fall back to CLI
-    # Fallback: use claude CLI (handles desktop auth)
+    model = os.environ.get("CAVEMAN_MODEL")
+    if model:
+        command.extend(["--model", model])
+
+    command.append(prompt)
+
+    for file in files or []:
+        command.extend(["--file", str(file)])
+
     try:
         result = subprocess.run(
-            ["claude", "--print"],
-            input=prompt,
+            command,
             text=True,
             capture_output=True,
             check=True,
         )
-        return strip_llm_wrapper(result.stdout.strip())
+    except FileNotFoundError as e:
+        raise RuntimeError("OpenCode CLI not found. Install `opencode` first.") from e
     except subprocess.CalledProcessError as e:
-        raise RuntimeError(f"Claude call failed:\n{e.stderr}")
+        details = e.stderr.strip() or e.stdout.strip()
+        raise RuntimeError(f"OpenCode call failed:\n{details}") from e
+
+    parts: list[str] = []
+    for line in result.stdout.splitlines():
+        if not line.strip():
+            continue
+
+        event = json.loads(line)
+        if event.get("type") != "text":
+            continue
+
+        text = event.get("part", {}).get("text")
+        if text:
+            parts.append(text)
+
+    response = "".join(parts).strip()
+    if not response:
+        raise RuntimeError("OpenCode returned no text response")
+
+    return strip_llm_wrapper(response)
 
 
-def build_compress_prompt(original: str) -> str:
+def build_compress_prompt() -> str:
     return f"""
-Compress this markdown into caveman format.
+Compress the attached markdown file into caveman format.
 
 STRICT RULES:
 - Do NOT modify anything inside ``` code blocks
@@ -75,15 +91,16 @@ STRICT RULES:
 - Return ONLY the compressed markdown body — do NOT wrap the entire output in a ```markdown fence or any other fence. Inner code blocks from the original stay as-is; do not add a new outer fence around the whole file.
 
 Only compress natural language.
-
-TEXT:
-{original}
 """
 
 
-def build_fix_prompt(original: str, compressed: str, errors: List[str]) -> str:
+def build_fix_prompt(errors: List[str]) -> str:
     errors_str = "\n".join(f"- {e}" for e in errors)
     return f"""You are fixing a caveman-compressed markdown file. Specific validation errors were found.
+
+Two files are attached:
+- first file: ORIGINAL reference copy
+- second file: COMPRESSED file to fix
 
 CRITICAL RULES:
 - DO NOT recompress or rephrase the file
@@ -99,12 +116,6 @@ HOW TO FIX:
 - Code block mismatch: find the exact code block in ORIGINAL, restore it in COMPRESSED
 - Heading mismatch: restore the exact heading text from ORIGINAL into COMPRESSED
 - Do not touch any section not mentioned in the errors
-
-ORIGINAL (reference only):
-{original}
-
-COMPRESSED (fix this):
-{compressed}
 
 Return ONLY the fixed compressed file. No explanation.
 """
@@ -135,12 +146,14 @@ def compress_file(filepath: Path) -> bool:
     if backup_path.exists():
         print(f"⚠️ Backup file already exists: {backup_path}")
         print("The original backup may contain important content.")
-        print("Aborting to prevent data loss. Please remove or rename the backup file if you want to proceed.")
+        print(
+            "Aborting to prevent data loss. Please remove or rename the backup file if you want to proceed."
+        )
         return False
 
     # Step 1: Compress
-    print("Compressing with Claude...")
-    compressed = call_claude(build_compress_prompt(original_text))
+    print("Compressing with OpenCode...")
+    compressed = call_opencode(build_compress_prompt(), files=[filepath])
 
     # Save original as backup, write compressed to original path
     backup_path.write_text(original_text)
@@ -167,9 +180,9 @@ def compress_file(filepath: Path) -> bool:
             print("❌ Failed after retries — original restored")
             return False
 
-        print("Fixing with Claude...")
-        compressed = call_claude(
-            build_fix_prompt(original_text, compressed, result.errors)
+        print("Fixing with OpenCode...")
+        compressed = call_opencode(
+            build_fix_prompt(result.errors), files=[backup_path, filepath]
         )
         filepath.write_text(compressed)
 
