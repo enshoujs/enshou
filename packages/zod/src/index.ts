@@ -1,1 +1,1 @@
-export { zodAdapter } from './adpater'
+export { zodAdapter } from './adapter'

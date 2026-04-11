@@ -247,3 +247,61 @@ it('should throw invalid recursive token', () => {
 
   expect(() => container.resolve(TOKEN2)).toThrow(Error)
 })
+
+it('should throw on circular dependency', () => {
+  const TOKEN_A = createToken('token-a')
+  const TOKEN_B = createToken('token-b')
+
+  @Inject([TOKEN_B])
+  class ClassA {
+    constructor(public b: any) {}
+  }
+
+  @Inject([TOKEN_A])
+  class ClassB {
+    constructor(public a: any) {}
+  }
+
+  container.registerClass(TOKEN_A, ClassA)
+  container.registerClass(TOKEN_B, ClassB)
+
+  expect(() => container.resolve(TOKEN_A)).toThrow(
+    /Circular dependency detected: Symbol\(token-a\)/,
+  )
+})
+
+it('should throw on self-circular dependency (A -> A)', () => {
+  const TOKEN_A = createToken('token-a')
+
+  @Inject([TOKEN_A])
+  class ClassA {
+    constructor(public a: any) {}
+  }
+
+  container.registerClass(TOKEN_A, ClassA)
+
+  expect(() => container.resolve(TOKEN_A)).toThrow(
+    /Circular dependency detected: Symbol\(token-a\)/,
+  )
+})
+
+it('should clean up resolution stack after failure', () => {
+  const TOKEN_A = createToken('token-a')
+  const TOKEN_FAIL = createToken('token-fail')
+
+  @Inject([TOKEN_FAIL])
+  class ClassA {
+    constructor(public f: any) {}
+  }
+
+  container.registerClass(TOKEN_A, ClassA)
+  // TOKEN_FAIL is not registered
+
+  expect(() => container.resolve(TOKEN_A)).toThrow(/No provider for Symbol\(token-fail\)/)
+
+  // Registering now should work if stack was cleaned up
+  class ClassFail {}
+  container.registerClass(TOKEN_FAIL, ClassFail)
+
+  expect(() => container.resolve(TOKEN_A)).not.toThrow()
+})

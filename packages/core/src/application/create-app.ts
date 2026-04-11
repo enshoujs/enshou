@@ -21,7 +21,12 @@ export function createApp(container: Container, options: ApplicationOptions): Ho
       const handler = instance[route.handler].bind(instance)
 
       if (route.schema && options.validator) {
-        app.on(route.method, path, validate(route.schema, options.validator), handler)
+        app.on(
+          route.method as any,
+          path as any,
+          ...validate(route.schema, options.validator),
+          handler,
+        )
         continue
       }
 

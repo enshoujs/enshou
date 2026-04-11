@@ -7,7 +7,7 @@ allowBuilds:
 
 catalogs:
   hono:
-    hono: '^4.12.9'
+    hono: '^4.12.12'
   testing:
     vitest: ^4.1.2
   tooling:

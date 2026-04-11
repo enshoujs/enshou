@@ -44,6 +44,7 @@ type RegisteredProvider<T> = RegisteredClassProvider<T> | RegisteredFactoryProvi
 export class Container {
   private readonly providers: Map<ProviderToken<unknown>, RegisteredProvider<any>> = new Map()
   private readonly singletonCache: Map<ProviderToken<unknown>, unknown> = new Map()
+  private readonly resolutionStack: Set<ProviderToken<unknown>> = new Set()
 
   register<T>(provider: Provider<T>): void {
     this.singletonCache.delete(provider.provide)
@@ -91,20 +92,29 @@ export class Container {
   resolve<T>(token: ProviderToken<T>): T {
     if (this.singletonCache.has(token)) return this.singletonCache.get(token) as T
 
+    if (this.resolutionStack.has(token))
+      throw Error(`Circular dependency detected: ${String(token)}`)
+
     const provider = this.providers.get(token)
     if (!provider) throw Error(`No provider for ${String(token)}`)
 
-    let value: unknown
+    this.resolutionStack.add(token)
 
-    if (provider.kind === 'factory') {
-      value = provider.useFactory(this)
-    } else {
-      const deps = ((provider.useClass as any)[INJECTS_KEY] ?? []).map(this.resolve.bind(this))
-      value = new provider.useClass(...deps)
+    try {
+      let value: unknown
+
+      if (provider.kind === 'factory') {
+        value = provider.useFactory(this)
+      } else {
+        const deps = ((provider.useClass as any)[INJECTS_KEY] ?? []).map(this.resolve.bind(this))
+        value = new provider.useClass(...deps)
+      }
+
+      if (provider.scope === 'singleton') this.singletonCache.set(token, value)
+
+      return value as T
+    } finally {
+      this.resolutionStack.delete(token)
     }
-
-    if (provider.scope === 'singleton') this.singletonCache.set(token, value)
-
-    return value as T
   }
 }
