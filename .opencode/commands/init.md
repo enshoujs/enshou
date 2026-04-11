@@ -1,5 +1,5 @@
 ---
-description: Custom project initialization to generate a strictly optimized AGENTS.md
+description: Initialize AGENTS.md
 agent: build
 ---
 
@@ -14,6 +14,7 @@ Analyze the repository and generate a concise `AGENTS.md` file in the project ro
 - **Git Conventions:** Branch naming patterns and commit formats (e.g., Conventional Commits).
 - **Environment Context:** Required variables, dev-environment quirks, and specific setup steps.
 - **"Gotchas":** Non-obvious pitfalls that aren't apparent from reading the code.
+- **Validation Workflow:** Mandatory verification sequence (e.g., `lint` -> `typecheck` -> `test`) and build success gate for task completion.
 
 ### 2. Information to EXCLUDE
 
@@ -28,4 +29,4 @@ Analyze the repository and generate a concise `AGENTS.md` file in the project ro
 
 - **Length:** The final `AGENTS.md` must be under **150 lines**.
 - **Tone:** Technical, dense, and descriptive.
-- **Existing Files:** If an `AGENTS.md` or `CLAUDE.md` exists, improve it by pruning fluff and adding missing technical constraints according to this plan.
+- **Existing Files:** If an `AGENTS.md` exists, improve it by pruning fluff and adding missing technical constraints according to this plan.
