@@ -1,8 +1,8 @@
+import type { AnyFunction } from '../types'
 import type { RouteSchema } from './metadata'
-import type { AnyFunction } from './utils'
 
+import { HttpMethod, normalizePath } from '../utils'
 import { getControllerMetadata } from './metadata'
-import { HttpMethod, normalizePath } from './utils'
 
 type RouteMethodDecorator = (
   value: AnyFunction,
@@ -31,12 +31,18 @@ function createMethodDecorator(method: HttpMethod): RouteDecoratorFactory {
         | ClassMethodDecoratorContext<object, AnyFunction>
         | ClassFieldDecoratorContext<object, AnyFunction>,
     ): void | ((initialValue: AnyFunction) => AnyFunction) {
+      const handlerName = String(context.name)
+
       context.addInitializer(function () {
-        getControllerMetadata(this.constructor).routes.push({
+        const metadata = getControllerMetadata(this.constructor)
+
+        if (metadata.routes.has(handlerName)) return
+
+        metadata.routes.set(handlerName, {
           method,
           path: normalizePath(path),
-          handler: String(context.name),
           schema,
+          middlewares: [],
         })
       })
 

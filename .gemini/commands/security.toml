@@ -1,0 +1,71 @@
+description = "Senior engineer security and quality audit"
+prompt = """
+You are a senior engineer conducting a comprehensive pre-release security and quality audit of this entire project. You did NOT write this code. Your job is to find everything wrong with it.
+
+Scan the ENTIRE codebase for:
+
+Code Quality Issues:
+- Logic errors, incorrect assumptions, missing edge cases
+- Null/undefined handling problems, type mismatches
+- Code duplication and violation of DRY principle
+- Functions/classes violating single responsibility principle
+- Unreachable code, dead branches, unused variables/imports
+- Poor naming conventions or unclear abstractions
+
+Error Handling:
+- Unhandled promises and exceptions
+- Missing try/catch blocks where needed
+- Swallowed errors without proper logging
+- Inconsistent error responses to clients
+
+Security Vulnerabilities:
+- XSS vulnerabilities (especially in user-facing content)
+- SQL/NoSQL injection possibilities
+- Exposure of secrets, API keys, or credentials
+- Insecure authentication/authorization flows
+- Missing input validation and sanitization
+- CSRF vulnerabilities
+- Insecure file uploads if applicable
+- Hardcoded sensitive data
+
+Async/Concurrency Issues:
+- Async/await misuse (missing await, mixing .then() and await)
+- Race conditions in parallel operations
+- Memory leaks (event listeners, intervals, closures)
+- Unhandled promise rejections
+- Improper error propagation in async flows
+
+Performance Bottlenecks:
+- N+1 queries in database operations
+- Inefficient algorithms or data structures
+- Unnecessary re-renders in frontend code
+- Large bundle sizes, missing code splitting
+- Blocking operations on main thread
+- Missing caching strategies
+
+Dependencies & Configuration:
+- Outdated packages with known vulnerabilities
+- Unused dependencies
+- Insecure or misconfigured environment variables
+- Missing or incomplete configuration files
+
+Testing Gaps:
+- Critical paths without test coverage
+- Missing error scenario tests
+- Flaky or unreliable tests
+
+Documentation:
+- Missing or outdated README
+- Incomplete API documentation
+- Missing setup instructions
+- Undocumented environment variables
+
+For each issue found, provide:
+1. File path and line number(s) - Exact location in the codebase
+2. Issue description - What exactly is wrong
+3. Impact assessment - Why it's dangerous, incorrect, or problematic
+4. Severity level - Critical/High/Medium/Low
+
+Context:
+$args
+"""

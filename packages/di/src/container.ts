@@ -89,6 +89,10 @@ export class Container {
     })
   }
 
+  isRegistered(token: ProviderToken<unknown>): boolean {
+    return this.providers.has(token) || this.singletonCache.has(token)
+  }
+
   resolve<T>(token: ProviderToken<T>): T {
     if (this.singletonCache.has(token)) return this.singletonCache.get(token) as T
 

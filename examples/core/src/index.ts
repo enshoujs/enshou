@@ -1,5 +1,6 @@
-import type { Ctx } from '@enshou/core'
+import type { Ctx, InjectableMiddleware } from '@enshou/core'
 import type { InferSchema } from '@enshou/valibot'
+import type { Context, Next } from 'hono'
 
 import {
   Application,
@@ -9,6 +10,7 @@ import {
   Patch,
   Post,
   Put,
+  Use,
   ValidationError,
 } from '@enshou/core'
 import { Inject, createToken } from '@enshou/di'
@@ -91,13 +93,39 @@ type CreateOrderData = InferSchema<typeof CreateOrderSchema>
 type ReplaceOrderData = InferSchema<typeof ReplaceOrderSchema>
 type UpdateOrderStatusData = InferSchema<typeof UpdateOrderStatusSchema>
 
+const loggerMiddleware = async (c: Context, next: Next) => {
+  const start = Date.now()
+  await next()
+  const ms = Date.now() - start
+  console.log(`[HTTP] ${c.req.method} ${c.req.url} - ${ms}ms`)
+}
+
+class AuthService {
+  isValid(token?: string) {
+    return token === 'pizza-secret'
+  }
+}
+
+@Inject(AuthService)
+class AuthMiddleware implements InjectableMiddleware {
+  constructor(private readonly auth: AuthService) {}
+
+  async use(c: Context, next: Next) {
+    const token = c.req.header('Authorization')
+    if (!this.auth.isValid(token)) {
+      return c.json({ message: 'Unauthorized (Try Authorization: pizza-secret)' }, 401)
+    }
+    await next()
+  }
+}
+
 class KitchenLogger {
   log(message: string) {
     console.log(`[kitchen] ${message}`)
   }
 }
 
-@Inject([RESTAURANT_CONFIG, ORDER_ID_GENERATOR, KitchenLogger])
+@Inject(RESTAURANT_CONFIG, ORDER_ID_GENERATOR, KitchenLogger)
 class OrderService {
   private readonly orders: Order[]
 
@@ -192,8 +220,9 @@ class OrderService {
   }
 }
 
+@Use(loggerMiddleware)
 @Controller('/orders')
-@Inject([OrderService, RESTAURANT_CONFIG])
+@Inject(OrderService, RESTAURANT_CONFIG)
 class OrdersController {
   constructor(
     private readonly orders: OrderService,
@@ -250,6 +279,7 @@ class OrdersController {
     return c.json(order)
   }
 
+  @Use(AuthMiddleware)
   @Delete('/:id', OrderIdSchema)
   deleteOrder(c: Ctx<OrderIdData>) {
     const { id } = c.req.valid('param')
@@ -263,6 +293,8 @@ class OrdersController {
 const app = new Application({
   controllers: [OrdersController],
   providers: [
+    AuthService,
+    AuthMiddleware,
     KitchenLogger,
     OrderService,
     {

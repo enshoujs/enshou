@@ -1,5 +1,3 @@
-export type AnyFunction = (...args: any[]) => any
-
 export const HttpMethod = {
   GET: 'GET',
   POST: 'POST',

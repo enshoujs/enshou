@@ -233,7 +233,7 @@ it('should resolve provider classes and inject into controller', async () => {
   }
 
   @Controller('/svc')
-  @Inject([Greeter])
+  @Inject(Greeter)
   class SvcController {
     constructor(private readonly greeter: Greeter) {}
 

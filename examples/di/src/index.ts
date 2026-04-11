@@ -65,7 +65,7 @@ class AuditLogger {
   }
 }
 
-@Inject([CONFIG, LOGGER_TOKEN])
+@Inject(CONFIG, LOGGER_TOKEN)
 class ProductCatalogClient {
   constructor(
     private readonly config: ShopConfig,
@@ -82,7 +82,7 @@ class ProductCatalogClient {
   }
 }
 
-@Inject([LOGGER_TOKEN])
+@Inject(LOGGER_TOKEN)
 class OrderRepository {
   private nextId = 1
 
@@ -99,7 +99,7 @@ class OrderRepository {
   }
 }
 
-@Inject([CONFIG, ProductCatalogClient, OrderRepository, PAYMENT_GATEWAY_TOKEN, LOGGER_TOKEN])
+@Inject(CONFIG, ProductCatalogClient, OrderRepository, PAYMENT_GATEWAY_TOKEN, LOGGER_TOKEN)
 class CheckoutSession {
   constructor(
     private readonly config: ShopConfig,

@@ -115,7 +115,7 @@ it('should resolve dependencies in correct order', () => {
   class Class2 {}
 
   const TOKEN3 = createToken<Class3>('token')
-  @Inject([TOKEN1, TOKEN2])
+  @Inject(TOKEN1, TOKEN2)
   class Class3 {
     class2: Class2
     class1: Class1
@@ -145,7 +145,7 @@ it('should resolve recursive dependencies', () => {
   class Class1 {}
 
   const TOKEN2 = createToken<Class2>('token')
-  @Inject([TOKEN1])
+  @Inject(TOKEN1)
   class Class2 {
     class1: Class1
     constructor(class1: Class1) {
@@ -154,7 +154,7 @@ it('should resolve recursive dependencies', () => {
   }
 
   const TOKEN3 = createToken<Class3>('token')
-  @Inject([TOKEN2])
+  @Inject(TOKEN2)
   class Class3 {
     class2: Class2
     constructor(class2: Class2) {
@@ -182,7 +182,7 @@ it('should reuse singleton dependency inside transient provider', () => {
   class Class1 {}
 
   const TOKEN2 = createToken<Class2>('token')
-  @Inject([TOKEN1])
+  @Inject(TOKEN1)
   class Class2 {
     class1: Class1
     constructor(class1: Class1) {
@@ -205,7 +205,7 @@ it('should create transient dependency once for singleton provider', () => {
   class Class1 {}
 
   const TOKEN2 = createToken<Class2>('token')
-  @Inject([TOKEN1])
+  @Inject(TOKEN1)
   class Class2 {
     class1: Class1
     constructor(class1: Class1) {
@@ -235,7 +235,7 @@ it('should throw invalid recursive token', () => {
   class Class1 {}
 
   const TOKEN2 = createToken<Class2>('token')
-  @Inject([TOKEN1])
+  @Inject(TOKEN1)
   class Class2 {
     class1: Class1
     constructor(class1: Class1) {
@@ -252,12 +252,12 @@ it('should throw on circular dependency', () => {
   const TOKEN_A = createToken('token-a')
   const TOKEN_B = createToken('token-b')
 
-  @Inject([TOKEN_B])
+  @Inject(TOKEN_B)
   class ClassA {
     constructor(public b: any) {}
   }
 
-  @Inject([TOKEN_A])
+  @Inject(TOKEN_A)
   class ClassB {
     constructor(public a: any) {}
   }
@@ -273,7 +273,7 @@ it('should throw on circular dependency', () => {
 it('should throw on self-circular dependency (A -> A)', () => {
   const TOKEN_A = createToken('token-a')
 
-  @Inject([TOKEN_A])
+  @Inject(TOKEN_A)
   class ClassA {
     constructor(public a: any) {}
   }
@@ -289,7 +289,7 @@ it('should clean up resolution stack after failure', () => {
   const TOKEN_A = createToken('token-a')
   const TOKEN_FAIL = createToken('token-fail')
 
-  @Inject([TOKEN_FAIL])
+  @Inject(TOKEN_FAIL)
   class ClassA {
     constructor(public f: any) {}
   }

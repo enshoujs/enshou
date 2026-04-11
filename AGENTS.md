@@ -1,37 +1,36 @@
 # AGENTS.md
 
-## Project Purpose and Stack
+## Tech Stack & Architecture
 
-- `enshou` is a `pnpm` workspace for the TypeScript packages that make up the Enshou framework
-- `@enshou/core` provides the application layer: `Application`, controller/route decorators, Hono context helpers, and validation middleware
-- `@enshou/di` provides the DI container, `@Inject`, and token helpers.
-- `@enshou/valibot` and `@enshou/zod` provide `ValidatorAdapter` implementations.
-- Build tooling uses `tsdown` with shared defaults in `tsdown.base.ts`.
-- Formatting/linting use `oxfmt` and `oxlint`; tests use `vitest`.
-- Decorators use the current proposal API, NOT legacy decorator metadata.
+- **Framework:** `@enshou/core` provides Hono-based application layer, DI-integrated controllers, and validation middleware.
+- **DI (@enshou/di):** Singleton-by-default container using `Symbol` tokens. Supports `transient` scope. Zero-dependency runtime.
+- **Decorators:** TC39 Stage 3 (Standard). **Strictly NO legacy `reflect-metadata`.** Use `context.addInitializer`.
+- **Validation:** Adapter-based (`@enshou/valibot`, `@enshou/zod`) leveraging Hono's `c.req.valid`.
+- **Tooling:** `pnpm` workspaces with `catalogs`. `tsdown` (SWC) for ESM builds. `oxlint`/`oxfmt` for CI/CD.
 
-## Commands That Work Here
+## Critical Commands
 
-- Root: `pnpm build`, `pnpm test`, `pnpm check`
-- `examples/core`: `pnpm dev`
-- `examples/di`: `pnpm dev`
+- **Root:** `pnpm build`, `pnpm test`, `pnpm check` (runs `oxfmt && oxlint --fix`).
+- **Hooks:** `lefthook` triggers `build`, `check`, and `test` on pre-commit. **Failures block commits.**
+- **Examples:** `pnpm -C examples/core dev`, `pnpm -C examples/di dev`.
 
-## Repo Structure
+## Validation Flow
 
-- `packages/core/src/*` is the main editing area for framework runtime behavior.
-- `packages/di/src/*` is the standalone DI package.
-- `examples/core` is the main framework example.
-- `examples/di` is the DI example.
+- **Before Committing:** Run `pnpm check && pnpm test`.
+- **Development Cycle:** Use the narrowest validation scope possible (e.g., `vitest run test/specific.test.ts`) for speed.
+- **Cross-Package Changes:** Always run root `pnpm build` to verify workspace linking and type generation.
+- **Integration Check:** Verify behavior through `examples/core` or `examples/di` when modifying framework runtime.
 
-## Conventions and Boundaries
+## Engineering Constraints
 
-- Add public exports through each package's `src/index.ts`.
-- Preserve the current decorator model; do not switch to legacy decorator metadata.
-- Keep package boundaries intact; do not move DI concerns into framework adapters or examples.
-- Do not replace existing metadata attachment patterns unless the whole package is being updated consistently.
+- **Package Integrity:** `@enshou/di` is the foundation; do not import `@enshou/core` or external framework logic into it.
+- **API Surface:** Every package must export its public API via `src/index.ts`. Private logic stays in subdirectories.
+- **Metadata Management:** Routing and DI metadata are attached during class definition (decorators) and initialization. Use `getControllerMetadata(this.constructor)` for instance methods.
+- **Validation Linking:** Controller methods use `Ctx<InferSchema<typeof Schema>>` to ensure type safety between schema and handler.
 
-## Validation Policy
+## "Gotchas" & Pitfalls
 
-- Use the narrowest validation that matches the change scope while editing.
-- Run repo-root `pnpm check`, `pnpm test`, and `pnpm build` when changes affect public exports, shared config, package wiring, or cross-package behavior.
-- Re-run the relevant example app when changing example code or behavior exercised through examples.
+- **Circular Dependencies:** DI throws on cycles. Use `useFactory` to defer resolution if a cycle is unavoidable.
+- **Decorator Order:** Metadata collection is sensitive to decorator execution order (bottom-to-top for methods). `@Use` must be placed ABOVE the route decorator (e.g., `@Get`).
+- **ESM Only:** The entire project is `type: "module"`. Avoid CJS-specific globals (`__dirname`, etc.).
+- **Build Performance:** `tsdown` uses `dts: { oxc: true }` for fast type generation. If declarations are missing, check `tsdown.config.ts`.

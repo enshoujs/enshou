@@ -4,11 +4,10 @@ import type { HTTPResponseError } from 'hono/types'
 
 import { Container } from '@enshou/di'
 
+import type { Class } from '../types'
 import type { ValidatorAdapter } from '../validation/types'
 
 import { createApp } from './create-app'
-
-type Class<T> = new (...args: any[]) => T
 
 export type ApplicationProvider = Provider<unknown> | Class<any>
 
