@@ -1,8 +1,9 @@
-import type { AnyFunction } from '../types'
-import type { RouteSchema } from './metadata'
+import type { AnyFunction } from '../shared/types'
+import type { RouteSchema } from './types'
 
-import { HttpMethod, normalizePath } from '../utils'
-import { getControllerMetadata } from './metadata'
+import { getControllerMetadata } from '../internal/routing/metadata'
+import { normalizePath } from '../internal/routing/path'
+import { HttpMethod } from '../shared/http-method'
 
 type RouteMethodDecorator = (
   value: AnyFunction,

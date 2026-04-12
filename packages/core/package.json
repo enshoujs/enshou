@@ -1,6 +1,6 @@
 {
   "name": "@enshou/core",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "private": false,
   "license": "Apache-2.0",
   "author": "Ivan Popov <iiivanpopov999@gmail.com>",
@@ -16,6 +16,22 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./decorators": {
+      "types": "./dist/decorators/index.d.ts",
+      "import": "./dist/decorators/index.js"
+    },
+    "./middleware": {
+      "types": "./dist/middleware/index.d.ts",
+      "import": "./dist/middleware/index.js"
+    },
+    "./validation": {
+      "types": "./dist/validation/index.d.ts",
+      "import": "./dist/validation/index.js"
+    },
+    "./http": {
+      "types": "./dist/http/index.d.ts",
+      "import": "./dist/http/index.js"
     }
   },
   "scripts": {

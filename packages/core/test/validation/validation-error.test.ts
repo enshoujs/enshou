@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest'
 
-import { ValidationError } from '../../src/validation/validation-error'
+import { ValidationError } from '../../src/validation/error'
 
 it('should be an HTTPException with status 400', () => {
   const err = new ValidationError('json', [{ path: ['name'], message: 'Required' }])

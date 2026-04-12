@@ -1,2 +1,2 @@
-export type { ValidatorAdapter, ValidatorParseResult, ValidationIssue } from './types'
-export { ValidationError } from './validation-error'
+export type { ValidationIssue, ValidatorAdapter, ValidatorParseResult } from './adapter'
+export { ValidationError } from './error'

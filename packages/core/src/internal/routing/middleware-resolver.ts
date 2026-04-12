@@ -1,11 +1,7 @@
-import type { Container, ProviderToken } from '@enshou/di'
-import type { Context, MiddlewareHandler, Next } from 'hono'
+import type { Container } from '@enshou/di'
+import type { MiddlewareHandler } from 'hono'
 
-export interface InjectableMiddleware {
-  use(c: Context, next: Next): Promise<Response | void>
-}
-
-export type MiddlewareDefinition = ProviderToken<InjectableMiddleware> | MiddlewareHandler
+import type { MiddlewareDefinition } from '../../middleware/types'
 
 export function toHonoMiddleware(
   container: Container,

@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest'
 
-import { normalizePath } from '../../../src/utils'
+import { normalizePath } from '../../../src/internal/routing/path'
 
 it('should return / for empty string', () => {
   expect(normalizePath('')).toBe('/')

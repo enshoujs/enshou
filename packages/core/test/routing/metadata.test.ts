@@ -2,10 +2,10 @@ import { Context, Next } from 'hono'
 import { describe, expect, it } from 'vitest'
 
 import { Application } from '../../src/application'
-import { Controller } from '../../src/routing/controller'
-import { getControllerMetadata } from '../../src/routing/metadata'
-import { Delete, Get, Patch, Post, Put } from '../../src/routing/methods'
-import { Use } from '../../src/routing/use'
+import { Controller } from '../../src/decorators/controller'
+import { Delete, Get, Patch, Post, Put } from '../../src/decorators/routes'
+import { Use } from '../../src/decorators/use'
+import { getControllerMetadata } from '../../src/internal/routing/metadata'
 
 describe('Controller Metadata', () => {
   it('should set prefix on class metadata', () => {

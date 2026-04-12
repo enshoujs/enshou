@@ -1,4 +1,4 @@
-import type { RouteSchema } from '@enshou/core'
+import type { RouteSchema } from '@enshou/core/decorators'
 
 import * as v from 'valibot'
 

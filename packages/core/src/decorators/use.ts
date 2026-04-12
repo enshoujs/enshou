@@ -1,6 +1,6 @@
-import type { MiddlewareDefinition } from './middleware'
+import type { MiddlewareDefinition } from '../middleware'
 
-import { getControllerMetadata } from './metadata'
+import { getControllerMetadata } from '../internal/routing/metadata'
 
 export function Use(...middlewares: MiddlewareDefinition[]) {
   return function (

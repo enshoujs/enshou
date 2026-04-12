@@ -2,14 +2,14 @@ import type { Container } from '@enshou/di'
 
 import { Hono } from 'hono'
 
-import type { ApplicationOptions } from './application'
+import type { ApplicationOptions } from '../../application'
 
 import { getControllerMetadata } from '../routing/metadata'
-import { toHonoMiddleware } from '../routing/middleware'
-import { normalizePath } from '../utils'
+import { toHonoMiddleware } from '../routing/middleware-resolver'
+import { normalizePath } from '../routing/path'
 import { validate } from '../validation/middleware'
 
-export function createApp(container: Container, options: ApplicationOptions): Hono {
+export function buildApp(container: Container, options: ApplicationOptions): Hono {
   const app = new Hono()
 
   for (const controller of options.controllers ?? []) {
@@ -24,7 +24,6 @@ export function createApp(container: Container, options: ApplicationOptions): Ho
       const handler = instance[handlerName].bind(instance)
 
       const routeMiddlewares = route.middlewares.map((m) => toHonoMiddleware(container, m))
-
       const allMiddlewares = [...controllerMiddlewares, ...routeMiddlewares]
 
       if (route.schema && options.validator) {

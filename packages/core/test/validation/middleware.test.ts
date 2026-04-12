@@ -1,10 +1,10 @@
 import { Hono } from 'hono'
 import { expect, it, vi } from 'vitest'
 
-import type { ValidatorAdapter } from '../../src/validation/types'
+import type { ValidatorAdapter } from '../../src/validation/adapter'
 
-import { validate } from '../../src/validation/middleware'
-import { ValidationError } from '../../src/validation/validation-error'
+import { validate } from '../../src/internal/validation/middleware'
+import { ValidationError } from '../../src/validation/error'
 
 function makeAdapter(success: boolean, value?: unknown, issues = []): ValidatorAdapter {
   return {

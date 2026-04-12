@@ -3,12 +3,12 @@ import type { Context } from 'hono'
 import { Inject } from '@enshou/di'
 import { expect, it, vi } from 'vitest'
 
-import type { ValidatorAdapter } from '../../src/validation/types'
+import type { ValidatorAdapter } from '../../src/validation/adapter'
 
-import { Application } from '../../src/application/application'
-import { Controller } from '../../src/routing/controller'
-import { Delete, Get, Post, Put } from '../../src/routing/methods'
-import { ValidationError } from '../../src/validation/validation-error'
+import { Application } from '../../src/application'
+import { Controller } from '../../src/decorators/controller'
+import { Delete, Get, Post, Put } from '../../src/decorators/routes'
+import { ValidationError } from '../../src/validation/error'
 
 const passthroughAdapter: ValidatorAdapter = {
   name: 'passthrough',

@@ -2,10 +2,10 @@ import type { MiddlewareHandler, ValidationTargets } from 'hono'
 
 import { validator as honoValidator } from 'hono/validator'
 
-import type { RouteSchema } from '../routing'
-import type { ValidatorAdapter } from './types'
+import type { RouteSchema } from '../../decorators/types'
+import type { ValidatorAdapter } from '../../validation/adapter'
 
-import { ValidationError } from './validation-error'
+import { ValidationError } from '../../validation/error'
 
 export function validate(schema: RouteSchema, validator: ValidatorAdapter): MiddlewareHandler[] {
   return Object.entries(schema).map(([key, value]) => {

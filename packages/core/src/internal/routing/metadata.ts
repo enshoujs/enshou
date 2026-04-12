@@ -1,17 +1,7 @@
-import type { ValidationTargets } from 'hono'
-
-import type { HttpMethod } from '../utils'
-import type { MiddlewareDefinition } from './middleware'
+import type { RouteDefinition } from '../../decorators/types'
+import type { MiddlewareDefinition } from '../../middleware/types'
 
 const CONTROLLER_METADATA_KEY: unique symbol = Symbol('controller-metadata')
-
-export type RouteSchema = Partial<Record<keyof ValidationTargets, any>>
-export interface RouteDefinition {
-  method: HttpMethod
-  path: string
-  schema?: RouteSchema
-  middlewares: MiddlewareDefinition[]
-}
 
 export interface ControllerMetadata {
   prefix: string

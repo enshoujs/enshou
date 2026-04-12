@@ -1,4 +1,4 @@
-import type { ValidatorAdapter, ValidatorParseResult } from '@enshou/core'
+import type { ValidatorAdapter, ValidatorParseResult } from '@enshou/core/validation'
 import type { GenericSchema } from 'valibot'
 
 import { safeParse } from 'valibot'

@@ -2,11 +2,12 @@ import { createToken, Inject } from '@enshou/di'
 import { Context, Next } from 'hono'
 import { describe, expect, it, vi } from 'vitest'
 
+import type { InjectableMiddleware } from '../src/middleware'
+
 import { Application } from '../src/application'
-import { Controller } from '../src/routing/controller'
-import { Get } from '../src/routing/methods'
-import { InjectableMiddleware } from '../src/routing/middleware'
-import { Use } from '../src/routing/use'
+import { Controller } from '../src/decorators/controller'
+import { Get } from '../src/decorators/routes'
+import { Use } from '../src/decorators/use'
 
 describe('Middleware', () => {
   it('should apply injectable middleware', async () => {
