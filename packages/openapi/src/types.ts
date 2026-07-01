@@ -1,8 +1,8 @@
 export interface SchemaConverter {
-  toJsonSchema(schema: unknown): JsonSchema
+  toJsonSchema(schema: any): JsonSchema
 }
 
-export type JsonSchema = Record<string, unknown>
+export type JsonSchema = Record<string, any>
 
 export interface OpenApiInfo {
   title: string

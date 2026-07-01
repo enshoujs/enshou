@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": false,
   "license": "Apache-2.0",
-  "author": "Ivan Popov",
+  "author": "rhyei",
   "repository": "https://github.com/enshoujs/enshou.git",
   "files": [
     "dist",

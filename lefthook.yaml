@@ -1,9 +1,0 @@
-pre-commit:
-  commands:
-    build:
-      run: pnpm build
-    check:
-      run: pnpm check
-      stage_fixed: true
-    test:
-      run: pnpm test
