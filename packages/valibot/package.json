@@ -1,0 +1,43 @@
+{
+  "name": "@enshou/valibot",
+  "version": "0.1.1",
+  "private": false,
+  "license": "Apache-2.0",
+  "author": "Ivan Popov",
+  "repository": "https://github.com/enshoujs/enshou.git",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsdown",
+    "prepublishOnly": "pnpm build"
+  },
+  "dependencies": {
+    "@enshou/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@enshou/core": "workspace:*",
+    "@swc/core": "catalog:",
+    "@valibot/to-json-schema": "^1.0.0",
+    "hono": "catalog:",
+    "tsdown": "catalog:",
+    "typescript": "catalog:",
+    "unplugin-swc": "catalog:",
+    "valibot": "catalog:",
+    "vitest": "catalog:"
+  },
+  "peerDependencies": {
+    "hono": "catalog:",
+    "valibot": "catalog:"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "name": "example-core",
+  "scripts": {
+    "dev": "bun --hot src/index.ts"
+  },
+  "dependencies": {
+    "@enshou/core": "workspace:*",
+    "@enshou/di": "workspace:*",
+    "@enshou/openapi": "workspace:*",
+    "@enshou/valibot": "workspace:*",
+    "@valibot/to-json-schema": "^1.0.0",
+    "hono": "catalog:",
+    "valibot": "^1.4.1"
+  },
+  "devDependencies": {
+    "typescript": "catalog:"
+  }
+}
