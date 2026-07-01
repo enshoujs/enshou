@@ -1,9 +1,7 @@
 import swc from 'unplugin-swc'
+import { defineConfig } from 'vitest/config'
 
-export const vitestConfig = {
-  test: {
-    environment: 'node',
-  },
+export const vitestConfig: Parameters<typeof defineConfig>[0] = {
   oxc: false,
   plugins: [
     swc.vite({

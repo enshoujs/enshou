@@ -1,4 +1,4 @@
-import type { ClassProvider, Provider } from '@enshou/di'
+import type { Provider } from '@enshou/di'
 import type { ErrorHandler as HonoErrorHandler, MiddlewareHandler } from 'hono'
 
 import { Container } from '@enshou/di'
@@ -16,7 +16,7 @@ export interface ApplicationOptions {
   controllers?: Class<any>[]
   providers?: Provider<unknown>[]
   middlewares?: MiddlewareDefinition[]
-  errorHandler?: ClassProvider<ErrorHandler> | HonoErrorHandler
+  errorHandler?: Class<ErrorHandler> | HonoErrorHandler
 }
 
 export class Application {

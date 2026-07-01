@@ -1,11 +1,9 @@
-import type { JsonSchema } from '@enshou/openapi'
-
 import { Application } from '@enshou/core'
 import { OpenApiBuilder, scalarUi } from '@enshou/openapi'
 import { toJsonSchema } from '@valibot/to-json-schema'
 
 import { OrdersController } from './controllers/orders.controller'
-import { ErrorHandler, ERROR_HANDLER } from './error-handler'
+import { ErrorHandler } from './error-handler'
 import { AuthMiddleware, AUTH_MIDDLEWARE } from './middlewares/auth.middleware'
 import { ORDER_ID_GENERATOR, RESTAURANT_CONFIG } from './schemas'
 import { AuthService, AUTH_SERVICE } from './services/auth.service'
@@ -41,26 +39,19 @@ const app = new Application({
       },
     },
   ],
-  errorHandler: { provide: ERROR_HANDLER, useClass: ErrorHandler },
+  errorHandler: ErrorHandler,
 })
 
-const honoApp = await app.instantiate()
-
-const builder = new OpenApiBuilder({
+const document = new OpenApiBuilder({
   controllers: app.controllers,
-  schemaConverter: { toJsonSchema: (schema: unknown) => toJsonSchema(schema as any) as JsonSchema },
+  schemaConverter: { toJsonSchema },
   info: {
     title: 'Midnight Pizza API',
     version: '1.0.0',
     description: 'API for managing pizza orders',
   },
-  securitySchemes: {
-    bearerAuth: { type: 'http', scheme: 'bearer' },
-  },
-})
-const document = builder.toDocument()
+}).toDocument()
 
-honoApp.get('/openapi.json', (c) => c.json(document))
-honoApp.get('/docs', scalarUi({ specUrl: '/openapi.json', theme: 'moon' }))
-
-export default honoApp
+export default (await app.instantiate())
+  .get('/openapi.json', (c) => c.json(document))
+  .get('/docs', scalarUi({ specUrl: '/openapi.json' }))
