@@ -1,5 +1,4 @@
-import type { ErrorHandler as EnshouErrorHandler } from '@enshou/core'
-import type { ErrorHandler as HonoErrorHandler } from 'hono'
+import type { EnshouErrorHandler, HonoErrorHandler } from '@enshou/core'
 
 import { RestException } from '@enshou/core'
 

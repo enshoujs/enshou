@@ -19,8 +19,8 @@ type TestSchema = InferSchema<typeof TestSchema>
 
 @Controller('/test')
 class TestController {
-  @Post('/')
   @Use(...validate(TestSchema))
+  @Post('/')
   handlePost(c: Ctx<TestSchema>) {
     const data = c.req.valid('json')
     return c.json({ data })

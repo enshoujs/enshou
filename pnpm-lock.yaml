@@ -108,10 +108,6 @@ importers:
         version: 6.0.3
 
   packages/core:
-    dependencies:
-      hono:
-        specifier: 'catalog:'
-        version: 4.12.25
     devDependencies:
       '@enshou/di':
         specifier: workspace:*
@@ -119,6 +115,9 @@ importers:
       '@swc/core':
         specifier: 'catalog:'
         version: 1.15.41
+      hono:
+        specifier: 'catalog:'
+        version: 4.12.25
       tsdown:
         specifier: 'catalog:'
         version: 0.22.3(typescript@6.0.3)
@@ -175,11 +174,10 @@ importers:
         version: 4.1.9(@types/node@26.0.0)(vite@8.0.16(@types/node@26.0.0)(yaml@2.9.0))
 
   packages/valibot:
-    dependencies:
+    devDependencies:
       '@enshou/core':
         specifier: workspace:*
         version: link:../core
-    devDependencies:
       '@swc/core':
         specifier: 'catalog:'
         version: 1.15.41
@@ -206,11 +204,10 @@ importers:
         version: 4.1.9(@types/node@26.0.0)(vite@8.0.16(@types/node@26.0.0)(yaml@2.9.0))
 
   packages/zod:
-    dependencies:
+    devDependencies:
       '@enshou/core':
         specifier: workspace:*
         version: link:../core
-    devDependencies:
       '@swc/core':
         specifier: 'catalog:'
         version: 1.15.41

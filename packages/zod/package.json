@@ -1,6 +1,6 @@
 {
   "name": "@enshou/zod",
-  "version": "0.0.1",
+  "version": "0.2.0",
   "private": false,
   "license": "Apache-2.0",
   "author": "rhyei",
@@ -20,11 +20,9 @@
   },
   "scripts": {
     "build": "tsdown",
+    "test": "vitest run",
     "prepack": "cp ../../LICENSE ./",
     "prepublishOnly": "pnpm build"
-  },
-  "dependencies": {
-    "@enshou/core": "workspace:*"
   },
   "devDependencies": {
     "@enshou/core": "workspace:*",
@@ -37,6 +35,7 @@
     "zod": "catalog:"
   },
   "peerDependencies": {
+    "@enshou/core": "workspace:*",
     "hono": "catalog:",
     "zod": "catalog:"
   }
