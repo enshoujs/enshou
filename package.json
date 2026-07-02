@@ -26,8 +26,8 @@
     "prepare-commit-msg": "bun ./scripts/prepare-commit-msg $1"
   },
   "lint-staged": {
-    "*": [
-      "oxlint",
+    "*.{ts,json}": [
+      "oxlint --no-error-on-unmatched-pattern",
       "oxfmt"
     ]
   }
