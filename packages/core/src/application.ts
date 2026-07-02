@@ -9,7 +9,7 @@ import type { MiddlewareDefinition } from './middleware'
 import type { Class } from './utils'
 
 import { asControllerMetadata } from './metadata'
-import { normalizePath } from './utils'
+import { isClass, normalizePath } from './utils'
 
 export interface ApplicationOptions {
   basePath?: string
@@ -69,11 +69,11 @@ export class Application {
       }
     }
 
-    if (this.errorHandler?.prototype && 'handle' in this.errorHandler.prototype) {
+    if (isClass(this.errorHandler)) {
       const token = createToken<EnshouErrorHandler>(this.errorHandler.name)
       this.container.registerClass(token, this.errorHandler as any)
-      const errorHandlerInstance = await this.container.resolveAsync(token)
-      app.onError(errorHandlerInstance.handle.bind(errorHandlerInstance))
+      const instance = await this.container.resolveAsync(token)
+      app.onError(instance.handle.bind(instance))
     } else if (this.errorHandler) app.onError(this.errorHandler as any)
 
     return app

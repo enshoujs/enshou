@@ -19,3 +19,11 @@ export function normalizePath(path: string): string {
 
 export type AnyFunction = (...args: any[]) => any
 export type Class<T> = new (...args: any[]) => T
+
+export function isClass(fn: any): fn is Class<any> {
+  return (
+    typeof fn === 'function' &&
+    !!fn.prototype &&
+    !Object.getOwnPropertyDescriptor(fn, 'prototype')?.writable
+  )
+}
