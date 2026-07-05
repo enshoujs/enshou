@@ -24,9 +24,8 @@
     "prepublishOnly": "pnpm build"
   },
   "devDependencies": {
-    "@swc/core": "catalog:",
+    "@types/bun": "catalog:",
     "tsdown": "catalog:",
-    "typescript": "catalog:",
-    "unplugin-swc": "catalog:"
+    "typescript": "catalog:"
   }
 }

@@ -1,3 +1,5 @@
-import { tsdownConfig } from '../../tsdown.config.ts'
+import { defineConfig } from 'tsdown'
 
-export default tsdownConfig
+export default defineConfig({
+  dts: { oxc: true },
+})

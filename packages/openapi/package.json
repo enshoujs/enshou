@@ -25,11 +25,10 @@
   },
   "devDependencies": {
     "@enshou/core": "workspace:*",
-    "@swc/core": "catalog:",
+    "@types/bun": "catalog:",
     "hono": "catalog:",
     "tsdown": "catalog:",
-    "typescript": "catalog:",
-    "unplugin-swc": "catalog:"
+    "typescript": "catalog:"
   },
   "peerDependencies": {
     "@enshou/core": "workspace:*",

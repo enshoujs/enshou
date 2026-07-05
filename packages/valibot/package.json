@@ -25,12 +25,11 @@
   },
   "devDependencies": {
     "@enshou/core": "workspace:*",
-    "@swc/core": "catalog:",
+    "@types/bun": "catalog:",
     "@valibot/to-json-schema": "^1.0.0",
     "hono": "catalog:",
     "tsdown": "catalog:",
     "typescript": "catalog:",
-    "unplugin-swc": "catalog:",
     "valibot": "catalog:"
   },
   "peerDependencies": {

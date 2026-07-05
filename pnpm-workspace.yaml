@@ -1,18 +1,13 @@
 packages:
   - 'packages/*'
-  - 'examples/*'
 
 allowBuilds:
-  '@swc/core': true
-  lefthook: set this to true or false
-  simple-git-hooks: true
+  lefthook: true
 
 catalog:
-  '@swc/core': ^1.15.41
+  '@types/bun': ^1.3.14
   typescript: ^6.0.2
   hono: '^4.12.25'
   tsdown: ^0.22.3
-  unplugin-swc: ^1.5.9
   valibot: ^1.4.1
-  vitest: ^4.1.9
   zod: ^4.4.3
