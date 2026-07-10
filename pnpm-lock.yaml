@@ -66,6 +66,21 @@ importers:
         specifier: 'catalog:'
         version: 7.0.2
 
+  packages/cron:
+    devDependencies:
+      '@enshou/core':
+        specifier: workspace:*
+        version: link:../core
+      '@types/bun':
+        specifier: 'catalog:'
+        version: 1.3.14
+      tsdown:
+        specifier: 'catalog:'
+        version: 0.22.3(typescript@7.0.2)
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+
   packages/di:
     devDependencies:
       '@types/bun':

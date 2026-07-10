@@ -2,10 +2,11 @@ import { createToken } from '@enshou/di'
 
 import type { AnyFunction } from '#shared/types'
 
-import type { HttpMethod } from './metadata'
+import { asControllerMetadata } from '#shared/metadata'
+
 import type { MiddlewareDefinition } from './middleware'
 
-import { asControllerMetadata } from './metadata'
+export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'OPTIONS' | 'HEAD'
 
 export function Controller(prefix: string = '/') {
   return function (_target: any, context: ClassDecoratorContext): void {

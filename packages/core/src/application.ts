@@ -1,54 +1,61 @@
 import type { Provider } from '@enshou/di'
+import type { MiddlewareHandler } from 'hono'
 
 import { Container, createToken } from '@enshou/di'
 import { Hono } from 'hono'
 
 import type { Class } from '#shared/types'
 
+import { asControllerMetadata } from '#shared/metadata'
 import { isClass, normalizePath } from '#shared/utils'
 
-import type { EnshouErrorHandler, HonoErrorHandler } from './exceptions'
-import type { MiddlewareDefinition } from './middleware'
-
-import { asControllerMetadata } from './metadata'
+import type { EnshouErrorHandler, ErrorHandlerDefinition, HonoErrorHandler } from './exceptions'
+import type { Middleware, MiddlewareDefinition } from './middleware'
+import type { PluginDefinition } from './plugin'
 
 export interface ApplicationOptions {
+  container?: Container
   basePath?: string
   controllers?: Class<any>[]
-  providers?: Provider<unknown>[]
+  providers?: Provider<any>[]
   middlewares?: MiddlewareDefinition[]
-  errorHandler?: Class<EnshouErrorHandler> | HonoErrorHandler
+  plugins?: PluginDefinition[]
+  errorHandler?: ErrorHandlerDefinition
 }
 
 export class Application {
-  public readonly container: Container = new Container()
-
-  public basePath: string
-  public controllers: Class<any>[]
-  public providers: Provider<unknown>[]
-  public middlewares: MiddlewareDefinition[]
-  public errorHandler?: Class<EnshouErrorHandler> | HonoErrorHandler
+  readonly container: Container
+  readonly basePath: string
+  readonly controllers: Class<any>[]
+  readonly providers: Provider<unknown>[]
+  readonly middlewares: MiddlewareDefinition[]
+  readonly plugins: PluginDefinition[]
+  readonly errorHandler?: Class<EnshouErrorHandler> | HonoErrorHandler
 
   constructor(options: ApplicationOptions) {
+    this.container = options.container ?? new Container()
     this.basePath = options.basePath ?? ''
     this.controllers = options.controllers ?? []
     this.providers = options.providers ?? []
     this.middlewares = options.middlewares ?? []
+    this.plugins = options.plugins ?? []
     this.errorHandler = options.errorHandler
   }
 
-  private async _resolveMiddlewares(middlewares: MiddlewareDefinition[]) {
+  private async _resolveMiddlewares(
+    middlewares: MiddlewareDefinition[],
+  ): Promise<MiddlewareHandler[]> {
     return await Promise.all(
       middlewares.map(async (middleware) => {
         if (typeof middleware !== 'symbol') return middleware
-        const instance = await this.container.resolveAsync<any>(middleware)
+        const instance = await this.container.resolveAsync<Middleware>(middleware)
         return instance.handle.bind(instance)
       }),
     )
   }
 
   async instantiate(): Promise<Hono> {
-    const app = new Hono()
+    const application = new Hono()
 
     for (const provider of this.providers) this.container.register(provider)
 
@@ -61,16 +68,16 @@ export class Application {
 
       const controllerMiddlewares = await this._resolveMiddlewares(metadata.middlewares)
 
-      for (const [handler, route] of metadata.routes.entries()) {
+      for (const [handlerName, route] of metadata.routes.entries()) {
         const routeMiddlewares = await this._resolveMiddlewares(route.middlewares)
 
-        app.on(
+        application.on(
           route.method,
           normalizePath(`${this.basePath}/${metadata.prefix}/${route.path}`) as any,
           ...appMiddlewares,
           ...controllerMiddlewares,
           ...routeMiddlewares,
-          instance[handler].bind(instance),
+          instance[handlerName].bind(instance),
         )
       }
     }
@@ -78,10 +85,10 @@ export class Application {
     if (isClass(this.errorHandler)) {
       const token = createToken<EnshouErrorHandler>(this.errorHandler.name)
       this.container.registerClass(token, this.errorHandler)
-      const instance = await this.container.resolveAsync(token)
-      app.onError(instance.handle.bind(instance))
-    } else if (this.errorHandler) app.onError(this.errorHandler)
+      const errorHandler = await this.container.resolveAsync(token)
+      application.onError(errorHandler.handle.bind(errorHandler))
+    } else if (typeof this.errorHandler === 'function') application.onError(this.errorHandler)
 
-    return app
+    return application
   }
 }

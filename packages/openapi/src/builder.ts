@@ -1,5 +1,6 @@
 import type { Class } from '#shared/types'
 
+import { asControllerMetadata } from '#shared/metadata'
 import { compactObject, normalizePath } from '#shared/utils'
 
 import type {
@@ -11,7 +12,6 @@ import type {
   TagMeta,
 } from './types'
 
-import { asControllerMetadata } from './decorators'
 import { getSchemaName } from './schema'
 
 const PARAMETER_TARGETS = {

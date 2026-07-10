@@ -1,12 +1,6 @@
-import type { OpenapiMetadata, OperationMeta, SecurityRequirement } from './types'
+import { asControllerMetadata } from '#shared/metadata'
 
-export function asControllerMetadata(metadata: any): OpenapiMetadata {
-  metadata.openapi ??= {
-    operations: new Map(),
-  }
-
-  return metadata
-}
+import type { OperationMeta, SecurityRequirement } from './types'
 
 export function ApiTag(name: string, description?: string) {
   return function (_target: any, context: ClassDecoratorContext): void {
