@@ -1,8 +1,10 @@
-export interface SchemaConverter {
-  toJsonSchema(schema: any): JsonSchema
-}
+import type { Class } from '#shared/types'
 
 export type JsonSchema = Record<string, any>
+
+export interface SchemaResolver {
+  toJson(schema: any): JsonSchema
+}
 
 export interface OpenApiInfo {
   title: string
@@ -33,6 +35,8 @@ export interface ResponseMeta {
   contentType?: string
 }
 
+export type SecurityRequirement = Record<string, string[]>
+
 export interface OperationMeta {
   summary?: string
   description?: string
@@ -45,27 +49,14 @@ export interface OperationMeta {
   requestBodyRequired?: boolean
 }
 
-export type SecurityRequirement = Record<string, string[]>
-
 export interface TagMeta {
   name: string
   description?: string
 }
 
-export interface OpenApiControllerMeta {
-  tag?: TagMeta
-  operations: Map<string, OperationMeta>
-  security?: SecurityRequirement[]
-}
-
-export interface OpenapiMetadata {
-  openapi: OpenApiControllerMeta
-  [key: PropertyKey]: any
-}
-
-export interface OpenApiBuilderOptions {
-  controllers: (new (...args: any[]) => any)[]
-  schemaConverter: SchemaConverter
+export interface BuildDocumentOptions {
+  controllers: Class<any>[]
+  resolver: SchemaResolver
   info: OpenApiInfo
   servers?: OpenApiServer[]
   schemas?: Record<string, unknown>

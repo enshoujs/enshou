@@ -18,5 +18,5 @@ export function normalizePath(path: string): string {
 }
 
 export function compactObject<Object extends Record<string, any>>(obj: Object): Object {
-  return omitBy(obj, (v) => v === undefined) as Object
+  return omitBy(obj, (value) => value === undefined) as Object
 }

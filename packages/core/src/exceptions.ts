@@ -23,10 +23,9 @@ interface RestExceptionOptions {
 export class RestException extends HTTPException {
   constructor(status: ContentfulStatusCode, options: RestExceptionOptions = {}) {
     super(status, {
-      res:
-        options.payload !== undefined
-          ? Response.json(options.payload, { status, headers: options.headers })
-          : undefined,
+      res: options.payload
+        ? Response.json(options.payload, { status, headers: options.headers })
+        : undefined,
       cause: options.cause,
       message: options.message,
     })

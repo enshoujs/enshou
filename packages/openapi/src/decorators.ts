@@ -20,8 +20,9 @@ export function ApiOperation(operation: OperationMeta) {
     const handlerName = String(context.name)
     const existing = metadata.openapi.operations.get(handlerName)
 
-    if (existing) metadata.openapi.operations.set(handlerName, { ...existing, ...operation })
-    else metadata.openapi.operations.set(handlerName, operation)
+    if (existing?.security) operation.security = existing.security
+
+    metadata.openapi.operations.set(handlerName, operation)
   }
 }
 

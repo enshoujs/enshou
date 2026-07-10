@@ -9,7 +9,7 @@ import type { Class } from '#shared/types'
 import { asControllerMetadata } from '#shared/metadata'
 import { isClass, normalizePath } from '#shared/utils'
 
-import type { EnshouErrorHandler, ErrorHandlerDefinition, HonoErrorHandler } from './exceptions'
+import type { EnshouErrorHandler, ErrorHandlerDefinition } from './exceptions'
 import type { Middleware, MiddlewareDefinition } from './middleware'
 import type { PluginDefinition } from './plugin'
 
@@ -23,13 +23,28 @@ export interface ApplicationOptions {
   errorHandler?: ErrorHandlerDefinition
 }
 
-export class Application {
-  constructor(public readonly options: ApplicationOptions) {}
+export type ResolvedApplicationOptions = Required<Omit<ApplicationOptions, 'errorHandler'>> & {
+  errorHandler?: ErrorHandlerDefinition
+}
 
-  private async _resolveMiddlewares(
-    middlewares: MiddlewareDefinition[],
-  ): Promise<MiddlewareHandler[]> {
-    return await Promise.all(
+export class Application {
+  public readonly options: ResolvedApplicationOptions
+
+  constructor({
+    container = new Container(),
+    basePath = '',
+    controllers = [],
+    providers = [],
+    middlewares = [],
+    plugins = [],
+    errorHandler,
+  }: ApplicationOptions) {
+    // oxfmt-ignore
+    this.options = { container, basePath, controllers, providers, middlewares, plugins, errorHandler }
+  }
+
+  private _resolveMiddlewares(middlewares: MiddlewareDefinition[]) {
+    return Promise.all<MiddlewareHandler>(
       middlewares.map(async (middleware) => {
         if (typeof middleware !== 'symbol') return middleware
         const instance = await this.options.container.resolveAsync<Middleware>(middleware)
@@ -41,9 +56,7 @@ export class Application {
   async instantiate(): Promise<Hono> {
     const hono = new Hono()
 
-    for (const provider of this.options.providers) {
-      this.options.container.register(provider)
-    }
+    for (const provider of this.options.providers) this.options.container.register(provider)
 
     const appMiddlewares = await this._resolveMiddlewares(this.options.middlewares)
 
@@ -71,19 +84,14 @@ export class Application {
     if (isClass(this.options.errorHandler)) {
       const token = createToken<EnshouErrorHandler>(this.options.errorHandler.name)
       this.options.container.registerClass(token, this.options.errorHandler)
-      const errorHandler = await this.options.container.resolveAsync(token)
-      hono.onError(errorHandler.handle.bind(errorHandler))
-    } else if (typeof this.options.errorHandler === 'function') {
-      hono.onError(this.options.errorHandler)
-    }
+      const instance = await this.options.container.resolveAsync(token)
 
-    for (const plugin of this.options.plugins) {
-      await plugin.onApplicationInit({
-        application: this,
-        hono,
-        options: this.options,
-      })
-    }
+      hono.onError(instance.handle.bind(instance))
+    } else if (typeof this.options.errorHandler === 'function')
+      hono.onError(this.options.errorHandler)
+
+    for (const plugin of this.options.plugins)
+      await plugin.onApplicationInit({ hono, options: this.options })
 
     return hono
   }

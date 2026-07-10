@@ -2,7 +2,7 @@ import { Controller, Get, Post } from '@enshou/core'
 import { expect, it } from 'bun:test'
 import { z } from 'zod'
 
-import { OpenApiBuilder } from './builder'
+import { buildDocument } from './builder'
 import { ApiOperation } from './decorators'
 
 const QuerySchema = z.object({
@@ -32,21 +32,19 @@ class UsersController {
   createUser() {}
 }
 
-const schemaConverter = {
-  toJsonSchema: (s: any) => {
+const resolver = {
+  toJson: (s: any) => {
     const { $schema: _, ...jsonSchema } = z.toJSONSchema(s)
     return jsonSchema
   },
 }
 
 it('should build parameters from @ApiOperation schema', () => {
-  const builder = new OpenApiBuilder({
+  const document = buildDocument({
     controllers: [UsersController],
-    schemaConverter,
+    resolver,
     info: { title: 'Test API', version: '1.0.0' },
   })
-
-  const document = builder.toDocument()
 
   expect(document.paths['/users']?.['get']).toBeDefined()
 
@@ -63,13 +61,11 @@ it('should build parameters from @ApiOperation schema', () => {
 })
 
 it('should build request body from @ApiOperation schema', () => {
-  const builder = new OpenApiBuilder({
+  const document = buildDocument({
     controllers: [UsersController],
-    schemaConverter,
+    resolver,
     info: { title: 'Test API', version: '1.0.0' },
   })
-
-  const document = builder.toDocument()
 
   expect(document.paths['/users']?.['post']).toBeDefined()
 

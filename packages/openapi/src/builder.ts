@@ -5,123 +5,51 @@ import { compactObject, normalizePath } from '#shared/utils'
 
 import type {
   JsonSchema,
-  OpenApiBuilderOptions,
+  BuildDocumentOptions,
   OpenApiDocument,
   OperationMeta,
-  SchemaConverter,
   TagMeta,
 } from './types'
 
 import { getSchemaName } from './schema'
 
-const PARAMETER_TARGETS = {
+const PARAMETER_TARGETS: Record<string, string> = {
   query: 'query',
   param: 'path',
   header: 'header',
   cookie: 'cookie',
 }
 
-const BODY_TARGETS = {
-  json: 'application/json',
-  form: 'multipart/form-data',
+function toOpenApiPath(path: string): string {
+  return path.replace(/:([a-zA-Z_][a-zA-Z0-9_]*)/g, '{$1}')
 }
 
-export class OpenApiBuilder {
-  private readonly controllers: Class<any>[]
-  private readonly converter: SchemaConverter
-  private readonly componentSchemas = new Map<string, JsonSchema>()
+export function buildDocument({
+  controllers,
+  resolver,
+  schemas,
+  ...options
+}: BuildDocumentOptions): OpenApiDocument {
+  const componentSchemas = new Map<string, JsonSchema>()
 
-  constructor(private readonly options: OpenApiBuilderOptions) {
-    this.controllers = options.controllers
-    this.converter = options.schemaConverter
+  Object.entries(schemas || {}).forEach(([name, schema]) =>
+    componentSchemas.set(name, resolver.toJson(schema)),
+  )
 
-    if (options.schemas)
-      for (const [name, schema] of Object.entries(options.schemas))
-        this.componentSchemas.set(name, this.converter.toJsonSchema(schema))
+  const resolveSchema = (schema: unknown): JsonSchema => {
+    const name = getSchemaName(schema)
+    if (!name) return resolver.toJson(schema)
+    if (!componentSchemas.has(name)) componentSchemas.set(name, resolver.toJson(schema))
+    return { $ref: `#/components/schemas/${name}` }
   }
 
-  toDocument(): OpenApiDocument {
-    return compactObject({
-      openapi: '3.1.0',
-      info: this.options.info,
-      servers: this.options.servers?.length ? this.options.servers : undefined,
-      paths: this.buildPaths(),
-      tags: this.collectTags(),
-      components: this.buildComponents(),
-    }) as OpenApiDocument
-  }
-
-  private buildPaths(): Record<string, Record<string, unknown>> {
-    const paths: Record<string, Record<string, unknown>> = {}
-
-    for (const controller of this.controllers) {
-      const metadata = controller[Symbol.metadata]
-      if (!metadata) continue
-
-      const prefix = (metadata.prefix as string) ?? '/'
-      const routes = (metadata.routes as Map<string, any>) ?? new Map()
-      const openapi = asControllerMetadata(metadata).openapi
-
-      for (const [handlerName, route] of routes.entries()) {
-        const fullPath = this.toOpenApiPath(normalizePath(`${prefix}/${route.path}`))
-        const method = (route.method as string).toLowerCase()
-        const operationMeta = openapi?.operations.get(handlerName)
-
-        paths[fullPath] ??= {}
-        paths[fullPath][method] = this.buildOperation(route, operationMeta, openapi)
-      }
-    }
-
-    return paths
-  }
-
-  private collectTags(): TagMeta[] {
-    return this.controllers.flatMap((controller) => {
-      const metadata = controller[Symbol.metadata]
-      const tag = metadata ? asControllerMetadata(metadata).openapi?.tag : undefined
-      return tag ? [tag] : []
-    })
-  }
-
-  private buildComponents(): Record<string, unknown> | undefined {
-    if (!this.componentSchemas.size && !this.options.securitySchemes) return undefined
-
-    return compactObject({
-      schemas: this.componentSchemas.size ? Object.fromEntries(this.componentSchemas) : undefined,
-      securitySchemes: this.options.securitySchemes,
-    })
-  }
-
-  private buildOperation(
-    route: { method: string; path: string; schema?: Record<string, any> },
-    operationMeta: OperationMeta | undefined,
-    controllerMeta: { tag?: TagMeta; security?: Record<string, string[]>[] } | undefined,
-  ): Record<string, unknown> {
-    const tagList = operationMeta?.tags ?? (controllerMeta?.tag ? [controllerMeta.tag.name] : [])
-    const schema = operationMeta?.schema ?? route.schema
-    const parameters = schema ? this.buildParameters(schema) : []
-    const requestBody = schema ? this.buildRequestBody(schema, operationMeta) : undefined
-
-    return compactObject({
-      tags: tagList.length ? tagList : undefined,
-      summary: operationMeta?.summary,
-      description: operationMeta?.description,
-      operationId: operationMeta?.operationId,
-      deprecated: operationMeta?.deprecated || undefined,
-      parameters: parameters.length ? parameters : undefined,
-      requestBody,
-      responses: this.buildResponses(operationMeta),
-      security: operationMeta?.security ?? controllerMeta?.security,
-    })
-  }
-
-  private buildParameters(schema: Record<string, any>): Record<string, unknown>[] {
-    return Object.entries(PARAMETER_TARGETS).flatMap(([target, openApiIn]) => {
+  const buildParameters = (schema: Record<string, any>): Record<string, unknown>[] =>
+    Object.entries(PARAMETER_TARGETS).flatMap(([target, openApiIn]) => {
       const targetSchema = schema[target]
       if (!targetSchema) return []
 
-      const jsonSchema = this.resolveSchema(targetSchema)
-      const properties = (jsonSchema.properties as Record<string, JsonSchema>) || {}
+      const jsonSchema = resolveSchema(targetSchema)
+      const properties = jsonSchema.properties || {}
       const required = (jsonSchema.required as string[]) ?? []
 
       return Object.entries(properties).map(([name, propSchema]) =>
@@ -133,27 +61,34 @@ export class OpenApiBuilder {
         }),
       )
     })
-  }
 
-  private buildRequestBody(
-    schema: Record<string, any>,
+  const buildRequestBody = (
+    routeSchema: Record<string, any> | undefined,
     operationMeta?: OperationMeta,
-  ): Record<string, unknown> | undefined {
-    const entries = Object.entries(BODY_TARGETS).flatMap(([target, contentType]) => {
-      const targetSchema = schema[target]
-      return targetSchema ? [[contentType, { schema: this.resolveSchema(targetSchema) }]] : []
-    })
+  ): Record<string, unknown> | undefined => {
+    if (!routeSchema) return
 
-    if (entries.length === 0) return undefined
+    let contentType: string
+    let bodySchema: unknown
+
+    if (routeSchema.json) {
+      contentType = 'application/json'
+      bodySchema = routeSchema.json
+    } else if (routeSchema.form) {
+      contentType = 'multipart/form-data'
+      bodySchema = routeSchema.form
+    } else return
 
     return {
       required: operationMeta?.requestBodyRequired ?? true,
-      content: Object.fromEntries(entries),
+      content: {
+        [contentType]: { schema: resolveSchema(bodySchema) },
+      },
     }
   }
 
-  private buildResponses(operationMeta: OperationMeta | undefined): Record<string, unknown> {
-    if (!operationMeta?.responses || Object.keys(operationMeta.responses).length === 0)
+  const buildResponses = (operationMeta: OperationMeta | undefined): Record<string, unknown> => {
+    if (!operationMeta?.responses || !Object.keys(operationMeta.responses).length)
       return { 200: { description: 'Successful response' } }
 
     return Object.fromEntries(
@@ -161,30 +96,78 @@ export class OpenApiBuilder {
         statusCode,
         compactObject({
           description: responseMeta.description,
-          content: responseMeta.schema
-            ? {
-                [responseMeta.contentType ?? 'application/json']: {
-                  schema: this.resolveSchema(responseMeta.schema),
-                },
-              }
-            : undefined,
+          content: responseMeta.schema && {
+            [responseMeta.contentType ?? 'application/json']: {
+              schema: resolveSchema(responseMeta.schema),
+            },
+          },
         }),
       ]),
     )
   }
 
-  private resolveSchema(schema: unknown): JsonSchema {
-    const name = getSchemaName(schema)
+  const buildOperation = (
+    route: { method: string; path: string; schema?: Record<string, any> },
+    operationMeta: OperationMeta | undefined,
+    controllerMeta: { tag?: TagMeta; security?: Record<string, string[]>[] } | undefined,
+  ): Record<string, unknown> => {
+    const tagList = operationMeta?.tags ?? (controllerMeta?.tag ? [controllerMeta.tag.name] : [])
+    const schema = operationMeta?.schema ?? route.schema
+    const parameters = schema ? buildParameters(schema) : []
 
-    if (!name) return this.converter.toJsonSchema(schema)
-
-    if (!this.componentSchemas.has(name))
-      this.componentSchemas.set(name, this.converter.toJsonSchema(schema))
-
-    return { $ref: `#/components/schemas/${name}` }
+    return compactObject({
+      tags: tagList.length ? tagList : undefined,
+      summary: operationMeta?.summary,
+      description: operationMeta?.description,
+      operationId: operationMeta?.operationId,
+      deprecated: operationMeta?.deprecated || undefined,
+      parameters: parameters.length ? parameters : undefined,
+      requestBody: buildRequestBody(schema, operationMeta),
+      responses: buildResponses(operationMeta),
+      security: operationMeta?.security ?? controllerMeta?.security,
+    })
   }
 
-  private toOpenApiPath(path: string): string {
-    return path.replace(/:([a-zA-Z_][a-zA-Z0-9_]*)/g, '{$1}')
+  const buildPaths = (): Record<string, Record<string, unknown>> => {
+    const paths: Record<string, Record<string, unknown>> = {}
+
+    for (const controller of controllers) {
+      const metadata = asControllerMetadata(controller[Symbol.metadata])
+      if (!metadata) continue
+
+      for (const [handlerName, route] of metadata.routes.entries()) {
+        const fullPath = toOpenApiPath(normalizePath(`${metadata.prefix}/${route.path}`))
+        const method = route.method.toLowerCase()
+        const operationMeta = metadata.openapi?.operations.get(handlerName)
+
+        paths[fullPath] ??= {}
+        paths[fullPath][method] = buildOperation(route, operationMeta, metadata.openapi)
+      }
+    }
+
+    return paths
   }
+
+  const collectTags = (): TagMeta[] =>
+    controllers.flatMap((controller: Class<any>) => {
+      const metadata = asControllerMetadata(controller[Symbol.metadata])
+      const tag = metadata?.openapi?.tag
+      return tag ? [tag] : []
+    })
+
+  const buildComponents = (): Record<string, unknown> | undefined => {
+    return compactObject({
+      schemas: !!componentSchemas.size && Object.fromEntries(componentSchemas),
+      securitySchemes: options.securitySchemes,
+    })
+  }
+
+  return compactObject({
+    openapi: '3.1.0',
+    info: options.info,
+    servers: options.servers,
+    paths: buildPaths(),
+    tags: collectTags(),
+    components: buildComponents(),
+  }) as OpenApiDocument
 }

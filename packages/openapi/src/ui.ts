@@ -4,7 +4,7 @@ import { html } from 'hono/html'
 
 export interface ScalarOptions {
   /** Path or URL to the OpenAPI JSON document */
-  specUrl: string
+  path: string
   /** Page title */
   title?: string
   /** CDN URL for Scalar */
@@ -30,7 +30,7 @@ export function scalarUi(options: ScalarOptions) {
           <body>
             <script
               id="api-reference"
-              data-url="${options.specUrl}"
+              data-url="${options.path}"
               data-configuration="${JSON.stringify({ theme })}"
             ></script>
             <script src="${cdn}"></script>

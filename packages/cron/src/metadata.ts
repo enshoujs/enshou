@@ -1,7 +1,5 @@
-import type { CronWithAutocomplete } from 'bun'
-
 export interface CronMetadata {
-  jobs: Map<string, CronWithAutocomplete>
+  jobs: Map<string, Bun.CronWithAutocomplete>
 }
 
 export function asCronMetadata(metadata: any): CronMetadata {

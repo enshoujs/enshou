@@ -1,5 +1,3 @@
-import type { CronWithAutocomplete } from 'bun'
-
 import type { AnyFunction } from '#shared/types'
 
 import { asCronMetadata } from './metadata'
@@ -12,7 +10,7 @@ type CronDecorator = {
   ): (initialValue: AnyFunction) => AnyFunction
 }
 
-export function Cron(pattern: CronWithAutocomplete): CronDecorator {
+export function Cron(pattern: Bun.CronWithAutocomplete): CronDecorator {
   function decorator(
     _value: AnyFunction,
     context: ClassMethodDecoratorContext<object, AnyFunction>,

@@ -10,14 +10,14 @@ export interface CronPluginOptions {
   jobs: Class<any>[]
 }
 
-export function CronPlugin(options: CronPluginOptions): Plugin {
+export function CronPlugin({ jobs }: CronPluginOptions): Plugin {
   return {
     onApplicationInit: async ({ options: { container } }) => {
-      for (const job of options.jobs) {
-        const token = createToken<Class<any>>(job.name)
+      for (const job of jobs) {
+        const token = createToken(job.name)
         container.registerClass(token, job)
 
-        const instance = await container.resolveAsync(token)
+        const instance = await container.resolveAsync<any>(token)
         const metadata = asCronMetadata(instance[Symbol.metadata])
 
         for (const [methodName, cronPattern] of metadata.jobs) {
