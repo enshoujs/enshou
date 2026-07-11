@@ -97,6 +97,10 @@ importers:
         version: 6.0.3
 
   packages/openapi:
+    dependencies:
+      '@enshou/di':
+        specifier: workspace:*
+        version: link:../di
     devDependencies:
       '@enshou/core':
         specifier: workspace:*

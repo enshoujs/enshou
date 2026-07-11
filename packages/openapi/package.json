@@ -1,6 +1,6 @@
 {
   "name": "@enshou/openapi",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "private": false,
   "license": "ISC",
   "author": "Ivan Popov <iiivanpopov999@gmail.com>",
@@ -30,6 +30,8 @@
     "zod": "catalog:"
   },
   "peerDependencies": {
+    "@enshou/core": "workspace:*",
+    "@enshou/di": "workspace:*",
     "hono": "catalog:"
   }
 }
