@@ -1,7 +1,7 @@
 import type { Provider } from '@enshou/di'
 import type { MiddlewareHandler } from 'hono'
 
-import { Container, createToken } from '@enshou/di'
+import { Container, token } from '@enshou/di'
 import { Hono } from 'hono'
 
 import type { Class } from '#shared/types'
@@ -61,32 +61,36 @@ export class Application {
     const appMiddlewares = await this._resolveMiddlewares(this.options.middlewares)
 
     for (const controller of this.options.controllers) {
-      const metadata = asControllerMetadata(controller[Symbol.metadata])
-      this.options.container.registerClass(metadata.token, controller)
-      const instance = await this.options.container.resolveAsync<any>(metadata.token)
+      const controllerMetadata = asControllerMetadata(controller[Symbol.metadata])
+      this.options.container.registerClass(controllerMetadata.token, controller)
+      const controllerInstance = await this.options.container.resolveAsync<any>(
+        controllerMetadata.token,
+      )
 
-      const controllerMiddlewares = await this._resolveMiddlewares(metadata.middlewares)
+      const controllerMiddlewares = await this._resolveMiddlewares(controllerMetadata.middlewares)
 
-      for (const [handlerName, route] of metadata.routes.entries()) {
+      for (const [handlerName, route] of controllerMetadata.routes.entries()) {
         const routeMiddlewares = await this._resolveMiddlewares(route.middlewares)
 
         hono.on(
           route.method,
-          normalizePath(`${this.options.basePath}/${metadata.prefix}/${route.path}`) as any,
+          normalizePath(
+            `${this.options.basePath}/${controllerMetadata.prefix}/${route.path}`,
+          ) as any,
           ...appMiddlewares,
           ...controllerMiddlewares,
           ...routeMiddlewares,
-          instance[handlerName].bind(instance),
+          controllerInstance[handlerName].bind(controllerInstance),
         )
       }
     }
 
     if (isClass(this.options.errorHandler)) {
-      const token = createToken<EnshouErrorHandler>(this.options.errorHandler.name)
-      this.options.container.registerClass(token, this.options.errorHandler)
-      const instance = await this.options.container.resolveAsync(token)
+      const errorHandlerToken = token<EnshouErrorHandler>(this.options.errorHandler.name)
+      this.options.container.registerClass(errorHandlerToken, this.options.errorHandler)
+      const errorHandlerInstance = await this.options.container.resolveAsync(errorHandlerToken)
 
-      hono.onError(instance.handle.bind(instance))
+      hono.onError(errorHandlerInstance.handle.bind(errorHandlerInstance))
     } else if (typeof this.options.errorHandler === 'function')
       hono.onError(this.options.errorHandler)
 

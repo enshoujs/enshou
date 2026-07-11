@@ -1,4 +1,4 @@
-import { createToken } from '@enshou/di'
+import { token } from '@enshou/di'
 
 import type { AnyFunction } from '#shared/types'
 
@@ -12,7 +12,7 @@ export function Controller(prefix: string = '/') {
   return function (_target: any, context: ClassDecoratorContext): void {
     const metadata = asControllerMetadata(context.metadata)
     metadata.prefix = prefix
-    metadata.token = createToken(context.name!)
+    metadata.token = token(context.name!)
   }
 }
 

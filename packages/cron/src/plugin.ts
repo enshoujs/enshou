@@ -1,6 +1,6 @@
 import type { Plugin } from '@enshou/core'
 
-import { createToken } from '@enshou/di'
+import { token } from '@enshou/di'
 
 import type { Class } from '#shared/types'
 
@@ -14,10 +14,10 @@ export function CronPlugin({ jobs }: CronPluginOptions): Plugin {
   return {
     onApplicationInit: async ({ options: { container } }) => {
       for (const job of jobs) {
-        const token = createToken(job.name)
-        container.registerClass(token, job)
+        const jobToken = token(job.name)
+        container.registerClass(jobToken, job)
 
-        const instance = await container.resolveAsync<any>(token)
+        const instance = await container.resolveAsync<any>(jobToken)
         const metadata = asCronMetadata(instance[Symbol.metadata])
 
         for (const [methodName, cronPattern] of metadata.jobs) {
