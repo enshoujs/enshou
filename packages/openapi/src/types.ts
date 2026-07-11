@@ -3,7 +3,7 @@ import type { Class } from '#shared/types'
 export type JsonSchema = Record<string, any>
 
 export interface SchemaResolver {
-  toJson(schema: any): JsonSchema
+  toJsonSchema(schema: any): JsonSchema
 }
 
 export interface OpenApiInfo {

@@ -31,13 +31,13 @@ export function buildDocument({
   const componentSchemas = new Map<string, JsonSchema>()
 
   Object.entries(schemas || {}).forEach(([name, schema]) =>
-    componentSchemas.set(name, resolver.toJson(schema)),
+    componentSchemas.set(name, resolver.toJsonSchema(schema)),
   )
 
   const resolveSchema = (schema: unknown): JsonSchema => {
     const name = getSchemaName(schema)
-    if (!name) return resolver.toJson(schema)
-    if (!componentSchemas.has(name)) componentSchemas.set(name, resolver.toJson(schema))
+    if (!name) return resolver.toJsonSchema(schema)
+    if (!componentSchemas.has(name)) componentSchemas.set(name, resolver.toJsonSchema(schema))
     return { $ref: `#/components/schemas/${name}` }
   }
 
