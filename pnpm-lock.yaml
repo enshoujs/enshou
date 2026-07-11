@@ -166,6 +166,12 @@ importers:
         specifier: 'catalog:'
         version: 4.4.3
 
+  shared:
+    dependencies:
+      es-toolkit:
+        specifier: ^1.49.0
+        version: 1.49.0
+
 packages:
 
   '@emnapi/core@1.11.1':
@@ -727,6 +733,9 @@ packages:
     resolution: {integrity: sha512-YGRs8knHhKHVShLkFET/rWAU8kmHbOV5LwN938RHI0pljAJ1Gf6SzXsSmRaEzcXTtOOmVqJ5+WtQPL5uigY50Q==}
     engines: {node: '>=14'}
 
+  es-toolkit@1.49.0:
+    resolution: {integrity: sha512-G5iZ6Pc/FNRY/soKZHC+TxGDD83rHUDXxzaWhGCX44vAv/tMs56WMusnm/KMNK+luUPsgA9U28cGr4RDlSzL2g==}
+
   fdir@6.5.0:
     resolution: {integrity: sha512-tIbYtZbucOs0BRGqPJkshJUYdL+SDH7dVM8gjy+ERp3WAUjLEFJE+02kanyHtwjWOnwrKYBiwAmM0p4kLJAnXg==}
     engines: {node: '>=12.0.0'}
@@ -1274,6 +1283,8 @@ snapshots:
   dts-resolver@3.0.0: {}
 
   empathic@2.0.1: {}
+
+  es-toolkit@1.49.0: {}
 
   fdir@6.5.0(picomatch@4.0.5):
     optionalDependencies:
