@@ -1,5 +1,6 @@
 import { asControllerMetadata } from '#shared/metadata'
-import { compactObject, normalizePath } from '#shared/utils'
+import { compactObject } from '#shared/object'
+import { normalizePath } from '#shared/utils'
 
 import type {
   JsonSchema,
