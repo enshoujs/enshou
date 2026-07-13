@@ -22,10 +22,14 @@ interface RestExceptionOptions {
 
 export class RestException extends HTTPException {
   constructor(status: ContentfulStatusCode, options: RestExceptionOptions = {}) {
+    let res: Response | undefined = undefined
+
+    if (options.payload) res = Response.json(options.payload, { status, headers: options.headers })
+    if (!options.payload && options.headers)
+      res = new Response(null, { status, headers: options.headers })
+
     super(status, {
-      res: options.payload
-        ? Response.json(options.payload, { status, headers: options.headers })
-        : undefined,
+      res,
       cause: options.cause,
       message: options.message,
     })
