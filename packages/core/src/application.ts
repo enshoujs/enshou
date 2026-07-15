@@ -2,7 +2,6 @@ import type { MiddlewareHandler } from 'hono'
 
 import { Hono } from 'hono'
 
-import { asControllerMetadata } from '#shared/metadata'
 import { isClass, normalizePath } from '#shared/utils'
 
 import type { InjectMetadata, Provider, Token } from './container'
@@ -12,6 +11,7 @@ import type { Module } from './module'
 import type { Plugin } from './plugin'
 
 import { Container } from './container'
+import { asControllerMetadata } from './metadata'
 
 export interface ApplicationOptions {
   basePath?: string
@@ -66,7 +66,8 @@ export class Application {
 
       for (const Controller of module.controllers) {
         const metadata = asControllerMetadata(Controller[Symbol.metadata])
-        this.container.register({ provide: metadata.token, useClass: Controller })
+        const provide = Symbol(Controller.name) as Token<any>
+        this.container.register({ provide, useClass: Controller })
 
         const injects = (metadata as InjectMetadata).injects
         for (const dependency of Object.values(injects ?? {})) {
@@ -74,16 +75,18 @@ export class Application {
 
           if (!visibility) continue
 
-          if (!visibility.has('global') && !visibility.has(module.name))
+          if (!visibility.has('global') && !visibility.has(module.name)) {
             throw new Error(
               `Module '${module.name}' cannot use dependency '${dependency.description}'. This dependency is only available in: [${Array.from(visibility.values()).join(', ')}].`,
             )
+          }
         }
 
-        const controllerMiddlewares = await this._resolveMiddlewares(metadata.middlewares)
-        const instance = await this.container.resolve<any>(metadata.token)
+        const controller = await this.container.resolve(provide)
 
-        for (const [handlerName, route] of metadata.routes.entries()) {
+        const controllerMiddlewares = await this._resolveMiddlewares(metadata.middlewares)
+
+        for (const [handlerName, route] of Object.entries(metadata.routes)) {
           const routeMiddlewares = await this._resolveMiddlewares(route.middlewares)
 
           hono.on(
@@ -92,7 +95,7 @@ export class Application {
             ...appMiddlewares,
             ...controllerMiddlewares,
             ...routeMiddlewares,
-            instance[handlerName].bind(instance),
+            controller[handlerName].bind(controller),
           )
         }
       }
@@ -101,14 +104,16 @@ export class Application {
     if (isClass(this.options.errorHandler)) {
       const provide = Symbol(this.options.errorHandler.name) as Token<EnshouErrorHandler>
       this.container.register({ provide, useClass: this.options.errorHandler })
-      const errorHandler = await this.container.resolve(provide)
+      const instance = await this.container.resolve(provide)
 
-      hono.onError(errorHandler.handle.bind(errorHandler))
-    } else if (typeof this.options.errorHandler === 'function')
+      hono.onError(instance.handle.bind(instance))
+    } else if (typeof this.options.errorHandler === 'function') {
       hono.onError(this.options.errorHandler)
+    }
 
-    for (const plugin of this.options.plugins)
+    for (const plugin of this.options.plugins) {
       await plugin.init({ container: this.container, hono, options: this.options })
+    }
 
     return hono
   }

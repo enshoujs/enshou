@@ -73,8 +73,6 @@ import { toJsonSchema } from '@valibot/to-json-schema'
 // })
 // console.log(JSON.stringify(buildParameters(SearchUserSchema), null, 2))
 // console.log(JSON.stringify(buildParameters(SearchUserSchema2), null, 2))
-
-import '#shared/polyfill'
 import { parse } from 'hono/utils/cookie'
 import * as v from 'valibot'
 
@@ -134,7 +132,9 @@ const resolver = {
     const { $schema: _, ...json } = toJsonSchema(schema, { target: 'draft-2020-12' })
     return json
   },
-  getEntries: (schema: any) => schema.entries,
+  getEntries: (schema: any) => {
+    return schema.entries
+  },
 }
 
 // interface BuildOperationOptions {

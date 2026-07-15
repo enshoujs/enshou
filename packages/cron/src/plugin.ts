@@ -11,16 +11,15 @@ export interface CronPluginOptions {
 export function CronPlugin({ jobs }: CronPluginOptions): Plugin {
   return {
     init: async ({ container }) => {
-      for (const job of jobs) {
-        const provide = Symbol(job.name) as Token<any>
-        container.register({ provide, useClass: job })
-        const instance = await container.resolve<any>(provide)
+      for (const Job of jobs) {
+        const provide = Symbol(Job.name) as Token<any>
+        container.register({ provide, useClass: Job })
+        const instance = await container.resolve(provide)
 
-        const metadata = asCronMetadata(job[Symbol.metadata])
+        const metadata = asCronMetadata(Job[Symbol.metadata])
 
-        for (const [methodName, cronPattern] of metadata.jobs) {
-          const handler = instance[methodName].bind(instance)
-          Bun.cron(cronPattern, handler)
+        for (const [methodName, cronPattern] of Object.entries(metadata.jobs)) {
+          Bun.cron(cronPattern, instance[methodName].bind(instance))
         }
       }
     },

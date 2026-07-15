@@ -99,8 +99,9 @@ export class Container {
   private async _resolve<T>(token: Token<T>, stack: ResolutionFrame[]): Promise<T> {
     if (this.singletonCache.has(token)) return this.singletonCache.get(token) as T
 
-    for (const frame of stack)
+    for (const frame of stack) {
       if (frame.token === token) throw Error(`Circular dependency ${String(token)}`)
+    }
 
     const provider = this.providers.get(token)
     if (!provider) throw Error(`No provider for ${String(token)}`)
@@ -125,15 +126,20 @@ export class Container {
 
         const scoped = Object.create(this) as Container
         Object.defineProperty(scoped, 'resolve', {
-          value: <V>(t: Token<V>) => this._resolve(t, stack),
+          value: <V>(t: Token<V>) => {
+            return this._resolve(t, stack)
+          },
         })
 
         value = await provider.useFactory(scoped, context)
       } else {
         value = new provider.useClass() as any
         const metadata = provider.useClass[Symbol.metadata] as InjectMetadata | undefined
-        for (const [field, token] of Object.entries(metadata?.injects ?? {}))
+        for (const [field, token] of Object.entries(metadata?.injects ?? {})) {
           value[field] = await this._resolve(token, stack)
+        }
+
+        if (typeof value.onInit === 'function') await value.onInit()
       }
 
       if (provider.scope === 'singleton') this.singletonCache.set(token, value)

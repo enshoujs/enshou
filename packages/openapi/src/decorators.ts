@@ -1,10 +1,10 @@
-import { asControllerMetadata } from '#shared/metadata'
-
 import type { OperationMeta, SecurityRequirement } from './types'
+
+import { asOpenApiMetadata } from './metadata'
 
 export function ApiTag(name: string, description?: string) {
   return function (_target: any, context: ClassDecoratorContext): void {
-    const metadata = asControllerMetadata(context.metadata)
+    const metadata = asOpenApiMetadata(context.metadata)
 
     metadata.openapi.tag = { name, description }
   }
@@ -15,14 +15,14 @@ export function ApiOperation(operation: OperationMeta) {
     _value: any,
     context: ClassMethodDecoratorContext | ClassFieldDecoratorContext,
   ): void {
-    const metadata = asControllerMetadata(context.metadata)
+    const metadata = asOpenApiMetadata(context.metadata)
 
     const handlerName = String(context.name)
-    const existing = metadata.openapi.operations.get(handlerName)
+    const existing = metadata.openapi.operations[handlerName]
 
     if (existing?.security) operation.security = existing.security
 
-    metadata.openapi.operations.set(handlerName, operation)
+    metadata.openapi.operations[handlerName] = operation
   }
 }
 
@@ -31,7 +31,7 @@ export function ApiSecurity(...requirements: SecurityRequirement[]) {
     _value: any,
     context: ClassDecoratorContext | ClassMethodDecoratorContext | ClassFieldDecoratorContext,
   ): void {
-    const metadata = asControllerMetadata(context.metadata)
+    const metadata = asOpenApiMetadata(context.metadata)
 
     if (context.kind === 'class') {
       metadata.openapi.security = requirements
@@ -39,9 +39,9 @@ export function ApiSecurity(...requirements: SecurityRequirement[]) {
     }
 
     const handlerName = String(context.name)
-    const existing = metadata.openapi.operations.get(handlerName)
+    const existing = metadata.openapi.operations[handlerName]
 
     if (existing) existing.security = requirements
-    else metadata.openapi.operations.set(handlerName, { security: requirements })
+    else metadata.openapi.operations[handlerName] = { security: requirements }
   }
 }

@@ -25,8 +25,9 @@ export class RestException extends HTTPException {
     let res: Response | undefined = undefined
 
     if (options.payload) res = Response.json(options.payload, { status, headers: options.headers })
-    if (!options.payload && options.headers)
+    if (!options.payload && options.headers) {
       res = new Response(null, { status, headers: options.headers })
+    }
 
     super(status, {
       res,

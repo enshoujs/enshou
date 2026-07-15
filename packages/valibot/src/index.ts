@@ -22,18 +22,22 @@ export type InferSchema<Schema extends RouteSchema> = {
 }
 
 export function validate(schema: RouteSchema): MiddlewareHandler[] {
-  return Object.entries(schema).map(([target, schema]) =>
-    honoValidator(target as keyof ValidationTargets, async (data, _c) => {
+  return Object.entries(schema).map(([target, schema]) => {
+    return honoValidator(target as keyof ValidationTargets, async (data, _c) => {
       const result = await safeParseAsync(schema, data)
 
       if (result.success) return result.output
 
-      const issues = result.issues.map((issue) => ({
-        path: issue.path!.map((p) => String(p.key)),
-        message: issue.message,
-      }))
+      const issues = result.issues.map((issue) => {
+        return {
+          path: issue.path!.map((p) => {
+            return String(p.key)
+          }),
+          message: issue.message,
+        }
+      })
 
       throw new ValidationException(issues)
-    }),
-  )
+    })
+  })
 }

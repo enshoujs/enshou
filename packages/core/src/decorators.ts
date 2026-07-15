@@ -1,12 +1,10 @@
-import type { AnyFunction } from '#shared/types'
-
-import { asControllerMetadata } from '#shared/metadata'
-
-import type { MiddlewareDefinition } from './middleware'
-
-export type HttpMethod = 'GET' | 'QUERY' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'OPTIONS' | 'HEAD'
+import type { AnyFunction, HttpMethod } from '#shared/types'
 
 import type { Token } from './container'
+import type { ControllerRoute } from './metadata'
+import type { MiddlewareDefinition } from './middleware'
+
+import { asControllerMetadata } from './metadata'
 
 export function Inject<T>(token: Token<T>) {
   return function (_: unknown, context: ClassFieldDecoratorContext<unknown, T>): void {
@@ -20,7 +18,6 @@ export function Controller(prefix: string = '/') {
   return function (_target: any, context: ClassDecoratorContext): void {
     const metadata = asControllerMetadata(context.metadata)
     metadata.prefix = prefix
-    metadata.token = Symbol(context.name)
   }
 }
 
@@ -56,15 +53,18 @@ function createMethodDecorator(method: HttpMethod): RouteDecoratorFactory {
       const metadata = asControllerMetadata(context.metadata)
 
       const handlerName = String(context.name)
-      const handlerMetadata = metadata.routes.get(handlerName)
+      const handlerMetadata = metadata.routes[handlerName]
 
-      if (!handlerMetadata) metadata.routes.set(handlerName, { method, path, middlewares: [] })
-      else if (handlerMetadata?.middlewares.length)
-        metadata.routes.set(handlerName, { ...handlerMetadata, method, path })
+      if (!handlerMetadata) metadata.routes[handlerName] = { method, path, middlewares: [] }
+      else if (handlerMetadata.middlewares?.length) {
+        metadata.routes[handlerName] = { ...handlerMetadata, method, path }
+      }
 
       if (context.kind === 'method') return
 
-      return (initialValue: AnyFunction) => initialValue
+      return (initialValue: AnyFunction) => {
+        return initialValue
+      }
     }
 
     return decorator
@@ -91,8 +91,7 @@ export function Use(...middlewares: MiddlewareDefinition[]) {
     }
 
     const handlerName = String(context.name)
-    const routeMetadata = metadata.routes.get(handlerName)
-
-    routeMetadata!.middlewares.unshift(...middlewares)
+    ;(metadata.routes[handlerName] as Partial<ControllerRoute>) ??= { middlewares: [] }
+    metadata.routes[handlerName].middlewares.unshift(...middlewares)
   }
 }

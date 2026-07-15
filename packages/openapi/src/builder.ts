@@ -1,4 +1,4 @@
-// import { asControllerMetadata } from '#shared/metadata'
+// import { asControllerMetadata } from '@enshou/core'
 // import { compactObject } from '#shared/object'
 // import { normalizePath } from '#shared/utils'
 
@@ -129,10 +129,10 @@
 //   for (const controller of controllers) {
 //     const metadata = asControllerMetadata(controller[Symbol.metadata])
 
-//     for (const [handlerName, route] of metadata.routes.entries()) {
+//     for (const [handlerName, route] of Object.entries(metadata.routes)) {
 //       const fullPath = toOpenApiPath(normalizePath(`${metadata.prefix}/${route.path}`))
 //       const method = route.method.toLowerCase()
-//       const operationMeta = metadata.openapi.operations.get(handlerName)
+//       const operationMeta = metadata.openapi.operations[handlerName]
 
 //       paths[fullPath] ??= {}
 //       paths[fullPath][method] = buildOperation(route, operationMeta, metadata.openapi)

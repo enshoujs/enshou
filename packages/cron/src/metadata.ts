@@ -1,8 +1,8 @@
 export interface CronMetadata {
-  jobs: Map<string, Bun.CronWithAutocomplete>
+  jobs: Record<string, Bun.CronWithAutocomplete>
 }
 
 export function asCronMetadata(metadata: any): CronMetadata {
-  metadata.jobs ??= new Map()
+  metadata.jobs ??= {}
   return metadata
 }

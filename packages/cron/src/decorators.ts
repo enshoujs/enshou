@@ -25,15 +25,17 @@ export function Cron(pattern: Bun.CronWithAutocomplete): CronDecorator {
       | ClassMethodDecoratorContext<object, AnyFunction>
       | ClassFieldDecoratorContext<object, AnyFunction>,
   ): void | ((initialValue: AnyFunction) => AnyFunction) {
-    const controllerMetadata = asCronMetadata(context.metadata)
+    const metadata = asCronMetadata(context.metadata)
 
     const methodName = String(context.name)
 
-    controllerMetadata.jobs.set(methodName, pattern)
+    metadata.jobs[methodName] = pattern
 
     if (context.kind === 'method') return
 
-    return (initialValue: AnyFunction) => initialValue
+    return (initialValue: AnyFunction) => {
+      return initialValue
+    }
   }
 
   return decorator

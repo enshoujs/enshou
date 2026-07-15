@@ -27,13 +27,15 @@ export interface OpenApiPluginOptions {
 
 export function OpenApiPlugin({ openapi, scalar }: OpenApiPluginOptions): Plugin {
   return {
-    onApplicationInit: ({ hono, options: { controllers } }) => {
+    init: ({ hono, options: { controllers } }) => {
       if (!openapi || !controllers.length) return
 
       // const document = buildDocument({ ...openapi, controllers })
 
       const openapiPath = openapi.path ?? '/openapi.json'
-      hono.get(openapiPath, (c) => c.json(''))
+      hono.get(openapiPath, (c) => {
+        return c.json('')
+      })
 
       if (scalar?.path) hono.get(scalar.path, ui({ ...scalar, openapiPath }))
     },
