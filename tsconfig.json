@@ -1,12 +1,22 @@
 {
-  "references": [
-    { "path": "./scripts" },
-    { "path": "./shared" },
-    { "path": "./packages/core" },
-    { "path": "./packages/cron" },
-    { "path": "./packages/openapi" },
-    { "path": "./packages/valibot" },
-    { "path": "./packages/zod" }
-  ],
-  "files": []
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "esnext",
+    "moduleDetection": "force",
+    "moduleResolution": "bundler",
+    "noEmit": true,
+    "skipLibCheck": true,
+    "verbatimModuleSyntax": true,
+    "allowImportingTsExtensions": true,
+    "types": ["bun"],
+    "paths": {
+      "@enshou/core": ["./packages/core/src/index.ts"],
+      "@enshou/cron": ["./packages/cron/src/index.ts"],
+      "@enshou/openapi": ["./packages/openapi/src/index.ts"],
+      "@enshou/valibot": ["./packages/valibot/src/index.ts"],
+      "@enshou/zod": ["./packages/zod/src/index.ts"],
+      "#/shared/*": ["./shared/src/*"]
+    }
+  },
+  "exclude": ["**/dist/**", "**/node_modules/**"]
 }

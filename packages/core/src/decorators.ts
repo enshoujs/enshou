@@ -1,4 +1,4 @@
-import type { AnyFunction, HttpMethod } from '#shared/types'
+import type { AnyFunction, HttpMethod } from '#/shared/types'
 
 import type { Token } from './container'
 import type { ControllerRoute } from './metadata'
@@ -55,7 +55,7 @@ function createMethodDecorator(method: HttpMethod): RouteDecoratorFactory {
       const handlerName = String(context.name)
       const handlerMetadata = metadata.routes[handlerName]
 
-      if (!handlerMetadata) metadata.routes[handlerName] = { method, path, middlewares: [] }
+      if (!handlerMetadata) metadata.routes[handlerName] = { method, middlewares: [], path }
       else if (handlerMetadata.middlewares?.length) {
         metadata.routes[handlerName] = { ...handlerMetadata, method, path }
       }

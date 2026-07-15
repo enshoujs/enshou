@@ -76,7 +76,7 @@ import { toJsonSchema } from '@valibot/to-json-schema'
 import { parse } from 'hono/utils/cookie'
 import * as v from 'valibot'
 
-import { compactObject } from '#shared/object'
+import { compactObject } from '#/shared/object'
 
 interface GenericRouteSchema extends Partial<Record<keyof ValidationTargets, any>> {}
 interface GenericResponse {
@@ -128,12 +128,12 @@ export function defineResponse<Response>(name: string, response: Response): Resp
 // } satisfies GenericResponseSchema)
 
 const resolver = {
+  getEntries: (schema: any) => {
+    return schema.entries
+  },
   toJsonSchema: (schema: any) => {
     const { $schema: _, ...json } = toJsonSchema(schema, { target: 'draft-2020-12' })
     return json
-  },
-  getEntries: (schema: any) => {
-    return schema.entries
   },
 }
 
@@ -187,8 +187,8 @@ const Email = defineSchema('Email', v.pipe(v.string(), v.email()))
 const User = defineSchema(
   'UserSchema',
   v.object({
-    id: v.pipe(v.string(), v.uuid()),
     email: Email,
+    id: v.pipe(v.string(), v.uuid()),
     name: v.string(),
   }),
 )
@@ -201,11 +201,11 @@ const Headers = defineSchema(
 )
 
 const CreateUserResponse = defineResponse('CreateUserResponse', {
-  header: Headers,
-  json: User,
   cookie: v.object({
     'access-token': v.object({}),
   }),
+  header: Headers,
+  json: User,
 } satisfies GenericResponse)
 
 function isComponent(target: any): target is { [Symbol.metadata]: ComponentMetadata } {
@@ -217,13 +217,13 @@ const components: Record<string, any> = {}
 const responses: Record<string, any> = {}
 
 const openapi = {
-  openapi: '3.1.0',
+  components,
   info: {
     title: 'Server API',
     verison: '1.0.0',
   },
+  openapi: '3.1.0',
   paths,
-  components,
   responses,
 }
 

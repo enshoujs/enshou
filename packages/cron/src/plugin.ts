@@ -1,6 +1,6 @@
 import type { Plugin, Token } from '@enshou/core'
 
-import type { Class } from '#shared/types'
+import type { Class } from '#/shared/types'
 
 import { asCronMetadata } from './metadata'
 

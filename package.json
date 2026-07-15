@@ -4,7 +4,7 @@
   "author": "Ivan Popov <iivanpopov@proton.me>",
   "type": "module",
   "scripts": {
-    "build": "pnpm run -r build",
+    "build": "pnpm -r build",
     "test": "bun test",
     "fmt": "oxfmt",
     "lint": "oxlint",
@@ -12,9 +12,9 @@
   },
   "devDependencies": {
     "@types/bun": "catalog:",
-    "lefthook": "^2.1.9",
-    "oxfmt": "^0.58.0",
-    "oxlint": "^1.73.0",
+    "lefthook": "^2.1.10",
+    "oxfmt": "^0.59.0",
+    "oxlint": "^1.74.0",
     "oxlint-tsgolint": "^0.24.0",
     "typescript": "catalog:"
   }

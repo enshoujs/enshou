@@ -1,4 +1,4 @@
-import type { Class } from '#shared/types'
+import type { Class } from '#/shared/types'
 
 import type { Provider } from './container'
 

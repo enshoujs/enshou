@@ -1,4 +1,4 @@
-import type { Class } from '#shared/types'
+import type { Class } from '#/shared/types'
 
 export type Scope = 'singleton' | 'transient'
 
@@ -74,16 +74,16 @@ export class Container {
     if ('useFactory' in provider) {
       this.providers.set(provider.provide, {
         kind: 'factory',
-        useFactory: provider.useFactory,
         scope: provider.scope ?? 'singleton',
+        useFactory: provider.useFactory,
       })
       return
     }
 
     this.providers.set(provider.provide, {
       kind: 'class',
-      useClass: provider.useClass,
       scope: provider.scope ?? 'singleton',
+      useClass: provider.useClass,
     })
   }
 
@@ -96,8 +96,8 @@ export class Container {
     return this._resolve(token, [])
   }
 
-  private async _resolve<T>(token: Token<T>, stack: ResolutionFrame[]): Promise<T> {
-    if (this.singletonCache.has(token)) return this.singletonCache.get(token) as T
+  private async _resolve(token: Token<any>, stack: ResolutionFrame[]): Promise<any> {
+    if (this.singletonCache.has(token)) return this.singletonCache.get(token)
 
     for (const frame of stack) {
       if (frame.token === token) throw Error(`Circular dependency ${String(token)}`)
@@ -107,8 +107,8 @@ export class Container {
     if (!provider) throw Error(`No provider for ${String(token)}`)
 
     const frame: ResolutionFrame = {
-      token,
       kind: provider.kind,
+      token,
       useClass: provider.kind === 'class' ? provider.useClass : undefined,
     }
     stack.push(frame)
@@ -118,10 +118,10 @@ export class Container {
 
       if (provider.kind === 'factory') {
         const context: ResolutionContext = {
-          token,
-          stack,
           parent: stack.at(-2),
           root: stack.at(0),
+          stack,
+          token,
         }
 
         const scoped = Object.create(this) as Container
@@ -144,7 +144,7 @@ export class Container {
 
       if (provider.scope === 'singleton') this.singletonCache.set(token, value)
 
-      return value as T
+      return value
     } finally {
       stack.pop()
     }

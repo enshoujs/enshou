@@ -1,4 +1,4 @@
-import type { Class } from '#shared/types'
+import type { Class } from '#/shared/types'
 
 export type JsonSchema = Record<string, any>
 

@@ -1,4 +1,4 @@
-import '#shared/polyfill'
+import '#/shared/polyfill'
 
 export * from './container'
 export * from './application'

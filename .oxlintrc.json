@@ -16,6 +16,7 @@
     "eslint/no-template-curly-in-string": "error",
     "eslint/prefer-const": "error",
     "eslint/no-unneeded-ternary": "error",
+    "eslint/sort-keys": "error",
     "eslint/preserve-caught-error": "error",
 
     "oxc/branches-sharing-code": "error",

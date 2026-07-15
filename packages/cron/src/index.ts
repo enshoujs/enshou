@@ -1,4 +1,4 @@
-import '#shared/polyfill'
+import '#/shared/polyfill'
 
 export * from './decorators'
 export * from './plugin'

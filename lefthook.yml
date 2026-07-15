@@ -1,12 +1,12 @@
 pre-commit:
   piped: true
   jobs:
-    - name: fmt
-      run: pnpm oxfmt --write --no-error-on-unmatched-pattern {staged_files}
-      stage_fixed: true
-
     - name: lint
       run: pnpm oxlint --fix --no-error-on-unmatched-pattern {staged_files}
+      stage_fixed: true
+
+    - name: fmt
+      run: pnpm oxfmt --write --no-error-on-unmatched-pattern {staged_files}
       stage_fixed: true
 
     - name: verify

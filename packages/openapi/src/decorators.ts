@@ -6,7 +6,7 @@ export function ApiTag(name: string, description?: string) {
   return function (_target: any, context: ClassDecoratorContext): void {
     const metadata = asOpenApiMetadata(context.metadata)
 
-    metadata.openapi.tag = { name, description }
+    metadata.openapi.tag = { description, name }
   }
 }
 

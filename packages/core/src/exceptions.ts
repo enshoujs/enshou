@@ -3,7 +3,7 @@ import type { ContentfulStatusCode } from 'hono/utils/http-status'
 
 import { HTTPException } from 'hono/http-exception'
 
-import type { Class } from '#shared/types'
+import type { Class } from '#/shared/types'
 
 export type HonoErrorHandler = ErrorHandler
 
@@ -24,21 +24,21 @@ export class RestException extends HTTPException {
   constructor(status: ContentfulStatusCode, options: RestExceptionOptions = {}) {
     let res: Response | undefined = undefined
 
-    if (options.payload) res = Response.json(options.payload, { status, headers: options.headers })
+    if (options.payload) res = Response.json(options.payload, { headers: options.headers, status })
     if (!options.payload && options.headers) {
-      res = new Response(null, { status, headers: options.headers })
+      res = new Response(null, { headers: options.headers, status })
     }
 
     super(status, {
-      res,
       cause: options.cause,
       message: options.message,
+      res,
     })
   }
 }
 
 export class ValidationException extends RestException {
   constructor(issues: { path: string[]; message: string }[]) {
-    super(422, { payload: { message: 'Validation failed.', issues } })
+    super(422, { payload: { issues, message: 'Validation failed.' } })
   }
 }

@@ -1,4 +1,4 @@
-import type { AnyFunction } from '#shared/types'
+import type { AnyFunction } from '#/shared/types'
 
 import { asCronMetadata } from './metadata'
 

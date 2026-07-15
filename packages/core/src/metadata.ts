@@ -1,4 +1,4 @@
-import type { HttpMethod } from '#shared/types'
+import type { HttpMethod } from '#/shared/types'
 
 import type { MiddlewareDefinition } from './middleware'
 

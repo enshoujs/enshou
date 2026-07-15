@@ -2,7 +2,7 @@ import type { MiddlewareHandler } from 'hono'
 
 import { Hono } from 'hono'
 
-import { isClass, normalizePath } from '#shared/utils'
+import { isClass, normalizePath } from '#/shared/utils'
 
 import type { InjectMetadata, Provider, Token } from './container'
 import type { EnshouErrorHandler, ErrorHandlerDefinition } from './exceptions'
@@ -39,7 +39,7 @@ export class Application {
     plugins = [],
     ...rest
   }: ApplicationOptions) {
-    this.options = { basePath, providers, middlewares, plugins, ...rest }
+    this.options = { basePath, middlewares, plugins, providers, ...rest }
   }
 
   async instantiate(): Promise<Hono> {
