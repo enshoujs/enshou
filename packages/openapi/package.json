@@ -1,6 +1,6 @@
 {
   "name": "@enshou/openapi",
-  "version": "0.2.10",
+  "version": "0.2.11",
   "private": false,
   "license": "ISC",
   "author": "Ivan Popov <iivanpopov@proton.me>",
@@ -23,12 +23,29 @@
   },
   "devDependencies": {
     "@enshou/core": "workspace:*",
+    "@valibot/to-json-schema": "^1.7.1",
     "hono": "catalog:",
     "tsdown": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "valibot": "catalog:",
+    "zod": "catalog:"
   },
   "peerDependencies": {
     "@enshou/core": "workspace:*",
-    "hono": "catalog:"
+    "@valibot/to-json-schema": "^1.7.1",
+    "hono": "catalog:",
+    "valibot": "catalog:",
+    "zod": "catalog:"
+  },
+  "peerDependenciesMeta": {
+    "valibot": {
+      "optional": true
+    },
+    "@valibot/to-json-schema": {
+      "optional": true
+    },
+    "zod": {
+      "optional": true
+    }
   }
 }

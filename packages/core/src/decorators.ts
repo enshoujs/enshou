@@ -1,4 +1,9 @@
-import type { AnyFunction, HttpMethod } from '#/shared/types'
+import type {
+  AnyFunction,
+  ClassFieldDecorator,
+  ClassMethodDecorator,
+  HttpMethod,
+} from '#/shared/types'
 
 import type { Token } from './container'
 import type { ControllerRoute } from './metadata'
@@ -14,42 +19,24 @@ export function Inject<T>(token: Token<T>) {
   }
 }
 
-export function Controller(prefix: string = '/') {
+export function Controller(prefix = '/') {
   return function (_target: any, context: ClassDecoratorContext): void {
     const metadata = asControllerMetadata(context.metadata)
     metadata.prefix = prefix
   }
 }
 
-type RouteMethodDecorator = (
-  value: AnyFunction,
-  context: ClassMethodDecoratorContext<object, AnyFunction>,
-) => void
-
-type RouteFieldDecorator = (
-  value: undefined,
-  context: ClassFieldDecoratorContext<object, AnyFunction>,
-) => (initialValue: AnyFunction) => AnyFunction
-
-type RouteDecorator = RouteMethodDecorator & RouteFieldDecorator
+type RouteDecorator = ClassMethodDecorator & ClassFieldDecorator
 type RouteDecoratorFactory = (path: string) => RouteDecorator
 
 function createMethodDecorator(method: HttpMethod): RouteDecoratorFactory {
-  return function (path: string) {
+  return function (path: string): RouteDecorator {
+    function decorator(_target: AnyFunction, context: ClassMethodDecoratorContext): void
+    function decorator(_target: undefined, context: ClassFieldDecoratorContext): void
     function decorator(
-      _value: AnyFunction,
-      context: ClassMethodDecoratorContext<object, AnyFunction>,
-    ): void
-    function decorator(
-      _value: undefined,
-      context: ClassFieldDecoratorContext<object, AnyFunction>,
-    ): (initialValue: AnyFunction) => AnyFunction
-    function decorator(
-      _value: AnyFunction | undefined,
-      context:
-        | ClassMethodDecoratorContext<object, AnyFunction>
-        | ClassFieldDecoratorContext<object, AnyFunction>,
-    ): void | ((initialValue: AnyFunction) => AnyFunction) {
+      _target: any,
+      context: ClassMethodDecoratorContext | ClassFieldDecoratorContext,
+    ): void {
       const metadata = asControllerMetadata(context.metadata)
 
       const handlerName = String(context.name)
@@ -58,12 +45,6 @@ function createMethodDecorator(method: HttpMethod): RouteDecoratorFactory {
       if (!handlerMetadata) metadata.routes[handlerName] = { method, middlewares: [], path }
       else if (handlerMetadata.middlewares?.length) {
         metadata.routes[handlerName] = { ...handlerMetadata, method, path }
-      }
-
-      if (context.kind === 'method') return
-
-      return (initialValue: AnyFunction) => {
-        return initialValue
       }
     }
 

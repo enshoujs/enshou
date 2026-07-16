@@ -5,13 +5,11 @@ import { HTTPException as HonoHttpException } from 'hono/http-exception'
 
 import type { Class } from '#/shared/types'
 
-export type HonoErrorHandler = ErrorHandler
-
 export interface EnshouErrorHandler {
-  handle: HonoErrorHandler
+  handle: ErrorHandler
 }
 
-export type ErrorHandlerDefinition = Class<EnshouErrorHandler> | HonoErrorHandler
+export type ErrorHandlerDefinition = Class<EnshouErrorHandler> | ErrorHandler
 
 interface RestExceptionOptions {
   body?: unknown

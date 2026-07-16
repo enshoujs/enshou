@@ -9,7 +9,7 @@ export interface ScalarOptions {
   theme?: string
 }
 
-export function scalar(options: ScalarOptions) {
+export function scalarUi(options: ScalarOptions) {
   const title = options.title ?? 'API Reference'
   const cdn = options.cdn ?? 'https://cdn.jsdelivr.net/npm/@scalar/api-reference'
   const theme = options.theme ?? 'default'

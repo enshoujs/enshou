@@ -1,6 +1,6 @@
 {
   "name": "@enshou/valibot",
-  "version": "0.2.9",
+  "version": "0.2.10",
   "private": false,
   "license": "ISC",
   "author": "Ivan Popov <iivanpopov@proton.me>",
@@ -32,5 +32,10 @@
     "@enshou/core": "workspace:*",
     "hono": "catalog:",
     "valibot": "catalog:"
+  },
+  "peerDependenciesMeta": {
+    "@enshou/openapi": {
+      "optional": true
+    }
   }
 }

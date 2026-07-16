@@ -3,22 +3,34 @@ import type { ValidationTargets } from 'hono/types'
 
 import { ValidationException } from '@enshou/core'
 import { validator as honoValidator } from 'hono/validator'
-import { ZodType } from 'zod'
+import { z } from 'zod'
 
-export type RouteSchema = Partial<Record<keyof ValidationTargets, ZodType>>
-export interface ResponseSchema {
-  body?: ZodType
-  header?: ZodType
-  cookie?: ZodType
+export const TARGET_MAPPING: Record<string, keyof ValidationTargets> = {
+  cookies: 'cookie',
+  form: 'form',
+  headers: 'header',
+  json: 'json',
+  params: 'param',
+  query: 'query',
 }
 
-export type InferSchema<Schema extends RouteSchema> = {
-  [K in keyof Schema]: Schema[K] extends ZodType<infer Output, any, any> ? Output : never
-}
+export type RouteSchema = z.ZodObject<{
+  json?: z.ZodTypeAny
+  form?: z.ZodTypeAny
+  query?: z.ZodTypeAny
+  params?: z.ZodTypeAny
+  headers?: z.ZodTypeAny
+  cookies?: z.ZodTypeAny
+}>
+export type ResponseSchema = z.ZodObject<{
+  json?: z.ZodTypeAny
+  headers?: z.ZodTypeAny
+  cookies?: z.ZodTypeAny
+}>
 
-export function validate(schema: RouteSchema): MiddlewareHandler[] {
-  return Object.entries(schema).map(([target, schema]) => {
-    return honoValidator(target, async (data, _c) => {
+export function validate(routeSchema: RouteSchema): MiddlewareHandler[] {
+  return Object.entries(routeSchema.shape).map(([target, schema]) => {
+    return honoValidator(TARGET_MAPPING[target], async (data, _c) => {
       const result = await schema.safeParseAsync(data)
 
       if (result.success) return result.data
