@@ -22,7 +22,6 @@
     "prepublishOnly": "pnpm build"
   },
   "devDependencies": {
-    "@types/bun": "catalog:",
     "hono": "catalog:",
     "tsdown": "catalog:",
     "typescript": "catalog:"

@@ -1,10 +1,10 @@
 import type { Class } from './types'
 
-export function isClass(fn: any): fn is Class<any> {
+export function isClass(target: any): target is Class<any> {
   return (
-    typeof fn === 'function' &&
-    !!fn.prototype &&
-    !Object.getOwnPropertyDescriptor(fn, 'prototype')?.writable
+    typeof target === 'function' &&
+    !!target.prototype &&
+    !Object.getOwnPropertyDescriptor(target, 'prototype')?.writable
   )
 }
 

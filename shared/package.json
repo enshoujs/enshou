@@ -1,6 +1,3 @@
 {
-  "type": "module",
-  "dependencies": {
-    "es-toolkit": "^1.49.0"
-  }
+  "type": "module"
 }

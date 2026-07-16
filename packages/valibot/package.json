@@ -23,7 +23,6 @@
   },
   "devDependencies": {
     "@enshou/core": "workspace:*",
-    "@types/bun": "catalog:",
     "hono": "catalog:",
     "tsdown": "catalog:",
     "typescript": "catalog:",

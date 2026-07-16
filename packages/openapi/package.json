@@ -23,13 +23,9 @@
   },
   "devDependencies": {
     "@enshou/core": "workspace:*",
-    "@types/bun": "catalog:",
-    "@valibot/to-json-schema": "^1.7.1",
     "hono": "catalog:",
     "tsdown": "catalog:",
-    "typescript": "catalog:",
-    "valibot": "catalog:",
-    "zod": "catalog:"
+    "typescript": "catalog:"
   },
   "peerDependencies": {
     "@enshou/core": "workspace:*",

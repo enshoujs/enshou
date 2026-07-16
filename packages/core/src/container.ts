@@ -66,13 +66,16 @@ export class Container {
   }
 
   register(provider: Provider<any>): void {
+    const token = provider.provide
+    if (typeof token !== 'symbol') throw Error(`Token ${String(token)} must be a symbol`)
+
     if ('useValue' in provider) {
-      this.singletonCache.set(provider.provide, provider.useValue)
+      this.singletonCache.set(token, provider.useValue)
       return
     }
 
     if ('useFactory' in provider) {
-      this.providers.set(provider.provide, {
+      this.providers.set(token, {
         kind: 'factory',
         scope: provider.scope ?? 'singleton',
         useFactory: provider.useFactory,
@@ -80,15 +83,11 @@ export class Container {
       return
     }
 
-    this.providers.set(provider.provide, {
+    this.providers.set(token, {
       kind: 'class',
       scope: provider.scope ?? 'singleton',
       useClass: provider.useClass,
     })
-  }
-
-  isRegistered(token: Token<unknown>): boolean {
-    return this.providers.has(token) || this.singletonCache.has(token)
   }
 
   resolve<Value>(token: Token<Value>): Promise<Value> {
@@ -126,7 +125,7 @@ export class Container {
 
         const scoped = Object.create(this) as Container
         Object.defineProperty(scoped, 'resolve', {
-          value: <V>(t: Token<V>) => {
+          value: (t: any) => {
             return this._resolve(t, stack)
           },
         })

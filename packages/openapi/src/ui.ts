@@ -2,13 +2,14 @@ import type { Context } from 'hono'
 
 import { html } from 'hono/html'
 
-export function ui(options: {
-  path: string
-  openapiPath: string
+export interface ScalarOptions {
+  url: string
   title?: string
   cdn?: string
   theme?: string
-}) {
+}
+
+export function scalar(options: ScalarOptions) {
   const title = options.title ?? 'API Reference'
   const cdn = options.cdn ?? 'https://cdn.jsdelivr.net/npm/@scalar/api-reference'
   const theme = options.theme ?? 'default'
@@ -25,7 +26,7 @@ export function ui(options: {
           <body>
             <script
               id="api-reference"
-              data-url="${options.openapiPath}"
+              data-url="${options.url}"
               data-configuration="${JSON.stringify({ theme })}"
             ></script>
             <script src="${cdn}"></script>

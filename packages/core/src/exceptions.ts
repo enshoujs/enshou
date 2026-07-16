@@ -1,7 +1,7 @@
 import type { ErrorHandler } from 'hono/types'
 import type { ContentfulStatusCode } from 'hono/utils/http-status'
 
-import { HTTPException } from 'hono/http-exception'
+import { HTTPException as HonoHttpException } from 'hono/http-exception'
 
 import type { Class } from '#/shared/types'
 
@@ -14,18 +14,18 @@ export interface EnshouErrorHandler {
 export type ErrorHandlerDefinition = Class<EnshouErrorHandler> | HonoErrorHandler
 
 interface RestExceptionOptions {
-  payload?: unknown
+  body?: unknown
   headers?: HeadersInit
   message?: string
   cause?: unknown
 }
 
-export class RestException extends HTTPException {
+export class HttpException extends HonoHttpException {
   constructor(status: ContentfulStatusCode, options: RestExceptionOptions = {}) {
     let res: Response | undefined = undefined
 
-    if (options.payload) res = Response.json(options.payload, { headers: options.headers, status })
-    if (!options.payload && options.headers) {
+    if (options.body) res = Response.json(options.body, { headers: options.headers, status })
+    if (!options.body && options.headers) {
       res = new Response(null, { headers: options.headers, status })
     }
 
@@ -37,8 +37,21 @@ export class RestException extends HTTPException {
   }
 }
 
-export class ValidationException extends RestException {
-  constructor(issues: { path: string[]; message: string }[]) {
-    super(422, { payload: { issues, message: 'Validation failed.' } })
+interface ValidationExceptionOptions {
+  headers?: HeadersInit
+  cause?: unknown
+}
+
+export class ValidationException extends HttpException {
+  constructor(
+    issues: { path: string[]; message: string }[],
+    options: ValidationExceptionOptions = {},
+  ) {
+    super(422, {
+      body: { issues, message: 'Validation failed.' },
+      cause: options.cause,
+      headers: options.headers,
+      message: 'Validation failed.',
+    })
   }
 }
