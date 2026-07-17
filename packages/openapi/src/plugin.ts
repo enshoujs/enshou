@@ -1,4 +1,4 @@
-import type { Module, Plugin, PluginInitContext } from '@enshou/core'
+import type { Plugin, PluginInitContext } from '@enshou/core'
 
 import type { OpenApiAdapter, OpenApiOptions } from './build-document'
 import type { ComponentsRegistry } from './components'
@@ -8,7 +8,6 @@ import { scalarUi } from './scalar'
 
 export interface OpenApiPluginOptions {
   adapter: OpenApiAdapter
-  modules: Module[]
   openapi: OpenApiOptions & {
     path: string
   }
@@ -20,14 +19,13 @@ export interface OpenApiPluginOptions {
 
 export function OpenApiPlugin({
   adapter,
-  modules,
   openapi,
   scalar,
   registry,
 }: OpenApiPluginOptions): Plugin {
   return {
-    init({ hono }: PluginInitContext) {
-      const document = buildDocument({ adapter, modules, openapi, registry })
+    init({ hono, options }: PluginInitContext) {
+      const document = buildDocument({ adapter, modules: options.modules, openapi, registry })
 
       hono.get(openapi.path, (c) => {
         return c.json(document)
