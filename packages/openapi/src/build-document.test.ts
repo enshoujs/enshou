@@ -20,7 +20,7 @@ describe('buildDocument', () => {
       }),
     )
 
-    const GetUsersQueryDto = defineSchema(
+    const GetUsersQuery = defineSchema(
       'GetUsersQueryDto',
       v.object({
         search: v.optional(v.string()),
@@ -28,7 +28,7 @@ describe('buildDocument', () => {
     )
 
     const GetUsersRoute = v.object({
-      query: GetUsersQueryDto,
+      query: GetUsersQuery,
     }) satisfies RouteSchema
 
     const GetUsersResponseBody = defineSchema(
