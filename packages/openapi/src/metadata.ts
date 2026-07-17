@@ -36,3 +36,8 @@ export function asOpenApiMetadata(metadata: any): OpenApiMetadata {
   metadata.openapi.operations ??= {}
   return metadata
 }
+
+export function ensureOperation(metadata: OpenApiMetadata, name: string): OperationMeta {
+  metadata.openapi.operations[name] ??= {}
+  return metadata.openapi.operations[name]
+}

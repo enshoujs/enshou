@@ -7,8 +7,8 @@ import * as v from 'valibot'
 
 import { valibotAdapter } from './adapters'
 import { buildDocument } from './build-document'
+import { defineSchema, defineResponse } from './components'
 import { ApiOperation, ApiResponse, ApiTag } from './decorators'
-import { defineSchema, defineResponse } from './schema'
 
 describe('buildDocument', () => {
   it('should generate valid OpenAPI document structure', () => {
@@ -98,7 +98,7 @@ describe('buildDocument', () => {
     expect(document.openapi).toBe('3.1.0')
     expect(document.paths['/users']?.get?.responses['200']).toBeDefined()
 
-    const response200 = document.components.responses.GetUsersResponse
+    const response200 = document.components.responses.GetUsersResponse as any
     expect(response200.content['application/json'].schema).toEqual({
       $ref: '#/components/schemas/GetUsersResponseBody',
     })
@@ -118,7 +118,7 @@ describe('buildDocument', () => {
     expect(document.components.schemas.BadRequestResponse).toBeUndefined()
 
     expect(
-      document.components.responses.BadRequestResponse.content['application/json'].schema,
+      (document.components.responses.BadRequestResponse as any).content['application/json'].schema,
     ).toEqual({
       $ref: '#/components/schemas/BadRequestResponseBody',
     })

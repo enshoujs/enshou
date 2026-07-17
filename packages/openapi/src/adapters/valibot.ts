@@ -4,25 +4,30 @@ import { toJsonSchema, toJsonSchemaDefs } from '@valibot/to-json-schema'
 
 import type { OpenApiAdapter } from '../build-document'
 
-import { schemas } from '../schema'
 import { parseResponseSchema } from './utils'
 
+const overrideRef = (context: { referenceId: string }) => {
+  return `#/components/schemas/${context.referenceId}`
+}
+
+const VALIBOT_OPTIONS = {
+  overrideRef,
+  target: 'openapi-3.0' as const,
+}
+
 export const valibotAdapter: OpenApiAdapter = {
-  buildResponses(responsesMap: Map<unknown, string>) {
+  buildResponses(responsesMap: Map<unknown, string>, schemasMap: Map<unknown, string>) {
     const responses: Record<string, unknown> = {}
 
     const definitions: Record<string, GenericSchema> = {}
-    for (const [schema, name] of schemas.entries()) {
+    for (const [schema, name] of schemasMap.entries()) {
       definitions[name] = schema as GenericSchema
     }
 
     for (const [schema, name] of responsesMap.entries()) {
       const jsonSchema = toJsonSchema(schema as GenericSchema, {
+        ...VALIBOT_OPTIONS,
         definitions,
-        overrideRef: (context) => {
-          return `#/components/schemas/${context.referenceId}`
-        },
-        target: 'openapi-3.0',
       })
       responses[name] = parseResponseSchema(jsonSchema)
     }
@@ -37,12 +42,7 @@ export const valibotAdapter: OpenApiAdapter = {
       definitions[name] = schema as GenericSchema
     }
 
-    return toJsonSchemaDefs(definitions, {
-      overrideRef: (context) => {
-        return `#/components/schemas/${context.referenceId}`
-      },
-      target: 'openapi-3.0',
-    })
+    return toJsonSchemaDefs(definitions, VALIBOT_OPTIONS)
   },
 
   getPropertySchema(schema: unknown, key: string) {
@@ -54,11 +54,6 @@ export const valibotAdapter: OpenApiAdapter = {
   },
 
   toJsonSchema(schema: unknown) {
-    return toJsonSchema(schema as GenericSchema, {
-      overrideRef: (context) => {
-        return `#/components/schemas/${context.referenceId}`
-      },
-      target: 'openapi-3.0',
-    })
+    return toJsonSchema(schema as GenericSchema, VALIBOT_OPTIONS)
   },
 }

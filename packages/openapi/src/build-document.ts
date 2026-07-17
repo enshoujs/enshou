@@ -4,15 +4,19 @@ import { asControllerMetadata } from '@enshou/core'
 
 import { normalizePath } from '#/shared/utils'
 
-import type { OperationMeta } from './metadata'
+import type { ComponentsRegistry } from './components'
+import type { OperationMeta, ResponseDefinition, ResponseRef, InlineResponse } from './metadata'
 
 import { parseResponseSchema } from './adapters/utils'
+import { defaultRegistry } from './components'
 import { asOpenApiMetadata } from './metadata'
-import { schemas, responses } from './schema'
 
 export interface OpenApiAdapter {
   buildSchemas(schemasMap: Map<unknown, string>): Record<string, unknown>
-  buildResponses(responsesMap: Map<unknown, string>): Record<string, unknown>
+  buildResponses(
+    responsesMap: Map<unknown, string>,
+    schemasMap: Map<unknown, string>,
+  ): Record<string, unknown>
   toJsonSchema(schema: unknown): unknown
   getPropertySchema(schema: unknown, key: string): unknown
 }
@@ -28,6 +32,7 @@ export interface BuildDocumentOptions {
   adapter: OpenApiAdapter
   openapi: OpenApiOptions
   modules: Module[]
+  registry?: ComponentsRegistry
 }
 
 export interface OpenApiDocument {
@@ -36,11 +41,17 @@ export interface OpenApiDocument {
     title: string
     version: string
   }
-  paths: Record<string, any>
+  paths: Record<string, Record<string, OpenApiOperation>>
   components: {
-    schemas: Record<string, any>
-    responses: Record<string, any>
+    schemas: Record<string, unknown>
+    responses: Record<string, unknown>
   }
+}
+
+export interface JsonSchema {
+  properties?: Record<string, JsonSchema>
+  required?: string[]
+  [key: string]: unknown
 }
 
 interface OpenApiParameter {
@@ -65,7 +76,7 @@ const PARAM_LOCATIONS = [
   { in: 'cookie', key: 'cookies' },
 ] as const
 
-function buildParameters(jsonSchema: any): OpenApiParameter[] {
+function buildParameters(jsonSchema: JsonSchema): OpenApiParameter[] {
   const properties = jsonSchema.properties ?? {}
 
   return PARAM_LOCATIONS.flatMap(({ key, in: location }) => {
@@ -85,14 +96,15 @@ function buildParameters(jsonSchema: any): OpenApiParameter[] {
 
 function buildRequestBody(
   adapter: OpenApiAdapter,
-  operationSchema: any,
-  jsonSchema: any,
+  operationSchema: unknown,
+  jsonSchema: JsonSchema,
+  schemasMap: Map<unknown, string>,
 ): OpenApiOperation['requestBody'] | undefined {
   const jsonBodySchema = adapter.getPropertySchema(operationSchema, 'json')
   const formBodySchema = adapter.getPropertySchema(operationSchema, 'form')
   const bodySchema = jsonBodySchema ?? formBodySchema
 
-  const schemaName = schemas.get(bodySchema)
+  const schemaName = schemasMap.get(bodySchema)
   if (bodySchema && schemaName) {
     const contentType = jsonBodySchema ? 'application/json' : 'application/x-www-form-urlencoded'
     return {
@@ -114,32 +126,50 @@ function buildRequestBody(
   return { content }
 }
 
-function buildResponses(adapter: OpenApiAdapter, responsesRecord: Record<string, any>) {
+function resolveRefResponse(
+  response: ResponseRef,
+  responsesMap: Map<unknown, string>,
+): Record<string, unknown> | undefined {
+  const schemaName = responsesMap.get(response.$ref)
+  if (!schemaName) return undefined
+
+  return {
+    $ref: `#/components/responses/${schemaName}`,
+    description: response.description,
+  }
+}
+
+function buildInlineResponse(
+  adapter: OpenApiAdapter,
+  response: InlineResponse,
+): Record<string, unknown> {
+  const { schema, ...rest } = response
+
+  if (!schema) return rest
+
+  const jsonSchema = adapter.toJsonSchema(schema)
+  const parsedResponse = parseResponseSchema(jsonSchema)
+
+  return {
+    ...rest,
+    ...parsedResponse,
+  }
+}
+
+function buildOperationResponses(
+  adapter: OpenApiAdapter,
+  responsesRecord: Record<string, ResponseDefinition>,
+  responsesMap: Map<unknown, string>,
+): Record<string, unknown> {
   const result: Record<string, unknown> = {}
 
   for (const [status, response] of Object.entries(responsesRecord)) {
-    if (response.$ref) {
-      const schemaName = responses.get(response.$ref)
-      if (!schemaName) continue
-
-      result[status] = {
-        $ref: `#/components/responses/${schemaName}`,
-        description: response.description,
-      }
-      continue
+    if (response && '$ref' in response && response.$ref) {
+      const resolved = resolveRefResponse(response, responsesMap)
+      if (resolved) result[status] = resolved
+    } else if (response) {
+      result[status] = buildInlineResponse(adapter, response)
     }
-
-    const { schema, ...rest } = response
-
-    if (schema) {
-      const jsonSchema = adapter.toJsonSchema(schema)
-      const parsedResponse = parseResponseSchema(jsonSchema)
-
-      result[status] = {
-        ...rest,
-        ...parsedResponse,
-      }
-    } else result[status] = rest
   }
 
   return result
@@ -148,7 +178,9 @@ function buildResponses(adapter: OpenApiAdapter, responsesRecord: Record<string,
 function buildOperation(
   adapter: OpenApiAdapter,
   controllerTags: string[],
-  operationMetadata: OperationMeta,
+  operationMetadata: OperationMeta = {},
+  schemasMap: Map<unknown, string>,
+  responsesMap: Map<unknown, string>,
 ): OpenApiOperation {
   const tags = operationMetadata?.tags
     ? [...controllerTags, ...operationMetadata.tags]
@@ -161,14 +193,23 @@ function buildOperation(
   }
 
   if (operationMetadata?.schema) {
-    const jsonSchema: any = adapter.toJsonSchema(operationMetadata.schema)
+    const jsonSchema = adapter.toJsonSchema(operationMetadata.schema) as JsonSchema
 
     operation.parameters = buildParameters(jsonSchema)
-    operation.requestBody = buildRequestBody(adapter, operationMetadata.schema, jsonSchema)
+    operation.requestBody = buildRequestBody(
+      adapter,
+      operationMetadata.schema,
+      jsonSchema,
+      schemasMap,
+    )
   }
 
   if (operationMetadata?.responses) {
-    operation.responses = buildResponses(adapter, operationMetadata.responses)
+    operation.responses = buildOperationResponses(
+      adapter,
+      operationMetadata.responses,
+      responsesMap,
+    )
   }
 
   return operation
@@ -178,6 +219,7 @@ export function buildDocument({
   adapter,
   openapi,
   modules,
+  registry = defaultRegistry,
 }: BuildDocumentOptions): OpenApiDocument {
   const paths: Record<string, Record<string, OpenApiOperation>> = {}
 
@@ -191,7 +233,13 @@ export function buildDocument({
         const openApiPath = fullPath.replaceAll(/:([a-zA-Z0-9_]+)/g, '{$1}')
 
         const operationMetadata = controllerOpenApiMetadata.operations?.[handlerName]
-        const operation = buildOperation(adapter, controllerOpenApiMetadata.tags, operationMetadata)
+        const operation = buildOperation(
+          adapter,
+          controllerOpenApiMetadata.tags,
+          operationMetadata,
+          registry.schemas,
+          registry.responses,
+        )
 
         paths[openApiPath] ??= {}
         paths[openApiPath][route.method.toLowerCase()] = operation
@@ -201,8 +249,8 @@ export function buildDocument({
 
   return {
     components: {
-      responses: adapter.buildResponses(responses),
-      schemas: adapter.buildSchemas(schemas),
+      responses: adapter.buildResponses(registry.responses, registry.schemas),
+      schemas: adapter.buildSchemas(registry.schemas),
     },
     info: openapi.info,
     openapi: '3.1.0',

@@ -5,7 +5,7 @@ import type { OpenApiAdapter } from '../build-document'
 import { parseResponseSchema } from './utils'
 
 export const zodAdapter: OpenApiAdapter = {
-  buildResponses(responsesMap: Map<unknown, string>) {
+  buildResponses(responsesMap: Map<unknown, string>, _schemasMap: Map<unknown, string>) {
     const result: Record<string, unknown> = {}
 
     for (const [schema, name] of responsesMap.entries()) {
@@ -33,12 +33,8 @@ export const zodAdapter: OpenApiAdapter = {
     })
   },
 
-  getPropertySchema(schema: unknown, key: string) {
-    const s = schema as any
-    if (s?.shape && key in s.shape) {
-      return s.shape[key]
-    }
-    return undefined
+  getPropertySchema(schema: any, key: string) {
+    if (schema?.shape && key in schema.shape) return schema.shape[key]
   },
 
   toJsonSchema(schema: unknown) {

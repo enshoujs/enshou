@@ -4,7 +4,7 @@ import type { ClassDecorator, ClassFieldDecorator, ClassMethodDecorator } from '
 
 import type { OperationMeta, ResponseDefinition } from './metadata'
 
-import { asOpenApiMetadata } from './metadata'
+import { asOpenApiMetadata, ensureOperation } from './metadata'
 
 export type ApiTagDecorator = ClassDecorator & ClassMethodDecorator & ClassFieldDecorator
 
@@ -19,8 +19,8 @@ export function ApiTag(...tags: string[]): ApiTagDecorator {
     const metadata = asOpenApiMetadata(context.metadata)
 
     if (context.kind === 'field' || context.kind === 'method') {
-      metadata.openapi.operations[String(context.name)] ??= {}
-      metadata.openapi.operations[String(context.name)].tags = tags
+      const operation = ensureOperation(metadata, String(context.name))
+      operation.tags = tags
       return
     }
 
@@ -44,10 +44,8 @@ export function ApiOperation(operation: ApiOperationOptions): ApiOperationDecora
     const metadata = asOpenApiMetadata(context.metadata)
     const name = String(context.name)
 
-    metadata.openapi.operations[name] = {
-      ...metadata.openapi.operations[name],
-      ...operation,
-    }
+    const operationMeta = ensureOperation(metadata, name)
+    Object.assign(operationMeta, operation)
   }
 
   return decorator
@@ -68,9 +66,9 @@ export function ApiResponse(
     const metadata = asOpenApiMetadata(context.metadata)
     const name = String(context.name)
 
-    metadata.openapi.operations[name] ??= {}
-    metadata.openapi.operations[name].responses ??= {}
-    metadata.openapi.operations[name].responses[status] = response
+    const operation = ensureOperation(metadata, name)
+    operation.responses ??= {}
+    operation.responses[status] = response
   }
 
   return decorator
